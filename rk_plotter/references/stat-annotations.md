@@ -254,6 +254,6 @@ Default priority order:
 - paragraphs of text inside panels
 - too many significance brackets
 - overlapping labels without collision control
-- `P = 0.000`
+- `P = 0.000`; report `P < 0.001` instead
 - unexplained acronyms in annotation boxes
 - interval bars without stating what interval they represent
