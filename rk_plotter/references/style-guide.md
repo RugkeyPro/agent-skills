@@ -44,13 +44,34 @@
 | SEM arrow | 2–4 pt (varies by coefficient magnitude) |
 | Map coastline | 0.5–0.8 pt |
 
-## Text Style Rules
+## Font Rules
 
-- **Species names**: always italic — use `$\it{Acropora}$` in labels or `fontstyle='italic'`
-- **"Community"**: always roman (non-italic), even in species lists
-- **Panel labels**: bold, `loc='left'`, format `(a) Title` auto-generated as `f'({chr(97+i)}) {title}'`
-- **Axis titles/labels**: sentence case, unit in parentheses e.g. `"Area (km²)"`
-- **Annotation boxes**: `bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2)` for stats; `bbox=dict(boxstyle='round,pad=0.3', edgecolor='gray', facecolor='white', alpha=0.8)` for facet insets
+All text uses **Arial** (fallback: Helvetica). Three weights/styles only:
+
+| Style | When to use | matplotlib parameter |
+|-------|-------------|---------------------|
+| **Bold** | Panel labels `(a) Title`; key stats in annotation boxes; figure titles | `fontweight='bold'` |
+| Regular | Axis labels, tick labels, legend entries, colorbar labels, body annotations | *(default)* |
+| *Italic* | Genus/species Latin names in any label or title | `fontstyle='italic'` or `$\it{Name}$` |
+
+Rules:
+- **Bold**: panel labels, significance stars inside brackets, dominant numbers in callouts
+- **Regular**: all axes labels (`ax.set_xlabel/ylabel`), tick labels, legend text, colorbar label, general annotation text
+- **Italic**: Latin binomials only (e.g. *Acropora*, *Symbiodinium*); common names and non-Latin terms stay roman
+- Avoid mixing bold + italic unless a species name appears inside a bold panel label
+
+```python
+# Panel label (bold)
+ax.set_title(f'({chr(97+i)}) Title', loc='left', fontweight='bold')
+
+# Species name italic in tick label
+ax.set_xticklabels([f'$\\it{{{sp}}}$' for sp in species_list])
+
+# Annotation box (regular text, bold value)
+ax.text(0.05, 0.05, f"Slope: {slope:+.2f}%/yr",
+        transform=ax.transAxes, fontsize=8.5, fontweight='bold',
+        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
+```
 
 ## Spines Convention
 
