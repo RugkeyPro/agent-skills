@@ -1,110 +1,104 @@
 # Color Palettes — rk_plotter
 
-## Recommended Qualitative Palettes (Categorical Groups)
+## Palette Selection Principles
 
-Use for distinguishing N discrete categories (species, regions, treatments, scenarios, etc.).
+- Use color to encode data meaning, not decoration
+- Prefer colorblind-safe palettes for categorical comparisons
+- Prefer perceptually uniform sequential palettes for magnitude
+- Prefer diverging palettes only when a meaningful midpoint exists
+- Confirm grayscale readability when figures may be printed
+
+## Qualitative Palettes
+
+Use for species, treatments, regions, scenarios, categories, or model groups.
 
 | Palette | N | Hex values | Notes |
 |---------|---|-----------|-------|
-| **Tol Bright** | 6 | `#4477AA` `#EE6677` `#228833` `#CCBB44` `#66CCEE` `#AA3377` | Paul Tol's colorblind-safe set; recommended first choice |
-| **Tol Muted** | 10 | `#332288` `#88CCEE` `#44AA99` `#117733` `#999933` `#DDCC77` `#CC6677` `#882255` `#AA4499` `#DDDDDD` | Larger categorical set, still colorblind-safe |
-| **Okabe-Ito** | 8 | `#E69F00` `#56B4E9` `#009E73` `#F0E442` `#0072B2` `#D55E00` `#CC79A7` `#000000` | ISO/IEEE recommended; excellent for print & screen |
-| **D3 Category10** | 10 | matplotlib `tab10` | Familiar default; avoid for >6 groups |
-| **Pastel accents** | 4–6 | `#AEC6CF` `#FFD1DC` `#B5EAD7` `#FFDAC1` | Low-saturation; good for filled areas / node backgrounds |
+| **Okabe-Ito** | 8 | `#E69F00` `#56B4E9` `#009E73` `#F0E442` `#0072B2` `#D55E00` `#CC79A7` `#000000` | Reliable first choice |
+| **Tol Bright** | 6 | `#4477AA` `#EE6677` `#228833` `#CCBB44` `#66CCEE` `#AA3377` | High clarity, publication-safe |
+| **Tol Muted** | 10 | `#332288` `#88CCEE` `#44AA99` `#117733` `#999933` `#DDCC77` `#CC6677` `#882255` `#AA4499` `#DDDDDD` | Good larger categorical set |
+| **Matplotlib `tab10`** | 10 | built-in | Acceptable, but less refined for dense print figures |
+| **Pastel fill set** | 4–6 | `#AEC6CF` `#FFD1DC` `#B5EAD7` `#FFDAC1` `#C7CEEA` | Good for fills beneath darker outlines |
 
-```python
-# Example: pick N colors from Tol Bright
-TOL_BRIGHT = ["#4477AA", "#EE6677", "#228833", "#CCBB44", "#66CCEE", "#AA3377"]
-colors = TOL_BRIGHT[:N]
-```
+## Sequential Palettes
 
-## Recommended Diverging Palettes
-
-Use when data spans a meaningful midpoint (0, baseline, reference year).
-
-| Palette | Use case | Notes |
-|---------|----------|-------|
-| `RdBu_r` | Change / anomaly / difference | Classic, high contrast |
-| `RdYlBu_r` | Graded divergence with neutral mid | Softer; good for richness or gradient |
-| `coolwarm` | Symmetric positive/negative | Perceptually uniform diverging |
-| `PuOr` | Two-categorical contrast | Purple–orange, colorblind-safe |
-| `BrBG` | Environmental index (wet/dry, warm/cold) | Earthy tones |
-
-Always pair with `TwoSlopeNorm` or symmetric `vmin=-vmax`:
-```python
-from matplotlib.colors import TwoSlopeNorm
-vmax = np.nanpercentile(np.abs(arr), 95)
-norm = TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
-im = ax.imshow(arr, cmap='RdBu_r', norm=norm)
-```
-
-## Recommended Sequential Palettes
-
-Use for single-direction continuous data (density, probability, intensity).
+Use for concentration, abundance, probability, risk, elevation, anomaly magnitude without sign, or uncertainty width.
 
 | Palette | Best for | Notes |
 |---------|----------|-------|
-| `viridis` | General-purpose sequential | Perceptually uniform, colorblind-safe |
-| `plasma` | High-dynamic-range data | More vibrant than viridis |
-| `mako` | Cool-toned density/probability | From seaborn; elegant for scientific use |
-| `cividis` | Print-safe sequential | Optimized for deuteranopia |
-| `YlOrRd` | Heat / risk / intensity | Intuitive warm ramp |
-| `Blues` / `Greens` | Single-variable spatial | Clean, minimal |
+| `viridis` | general continuous magnitude | default first choice |
+| `cividis` | print-friendly / deuteranopia-safe | slightly lower chroma |
+| `mako` | cool-toned scientific maps | elegant seaborn option |
+| `plasma` | high dynamic range | more vivid, use carefully |
+| `YlOrRd` | heat / hazard / exposure | intuitive warm ramp |
+| `Blues`, `Greens` | single-domain spatial maps | simple and readable |
+
+## Diverging Palettes
+
+Use only when values differ around a reference such as zero, baseline, climatology, control, or target.
+
+| Palette | Use case | Notes |
+|---------|----------|-------|
+| `RdBu_r` | anomaly / difference / residual | strong contrast |
+| `coolwarm` | symmetric signed effect | balanced but softer |
+| `PuOr` | two-sided comparison | colorblind-friendlier than many red-blue sets |
+| `BrBG` | environmental wet/dry or gain/loss | earthy tones |
+| `RdYlBu_r` | midpoint-centered gradients | useful but watch yellow in print |
+
+Always pair with explicit normalization:
 
 ```python
-# Log-scale intensity
-from matplotlib.colors import LogNorm
-norm = LogNorm(vmin=np.nanpercentile(arr[arr>0], 5),
-               vmax=np.nanpercentile(arr[arr>0], 95))
-im = ax.imshow(arr, cmap='mako', norm=norm)
+from matplotlib.colors import TwoSlopeNorm
+
+vmax = np.nanpercentile(np.abs(arr), 95)
+norm = TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
 ```
+
+## Cyclic Palettes
+
+Use for phase, direction, day-of-year on a circular axis, or aspect/orientation.
+
+Recommended:
+- `twilight`
+- `twilight_shifted`
+- `hsv` only if no better cyclic option is available and the use case is explicitly cyclic
 
 ## Discrete / Classified Maps
 
-Use `BoundaryNorm` + a diverging or qualitative colormap for N-class rasters:
+Use `BoundaryNorm` for classed rasters, thresholds, or management categories.
+
 ```python
 from matplotlib.colors import BoundaryNorm
-bounds = list(range(N + 1))           # e.g. [0, 1, 2, 3, 4, 5]
-cmap   = plt.cm.get_cmap('RdYlBu_r', N)
-norm   = BoundaryNorm(bounds, cmap.N)
-im = ax.imshow(class_arr, cmap=cmap, norm=norm)
+
+bounds = [0, 5, 10, 20, 40, 80]
+cmap = plt.cm.get_cmap("YlOrRd", len(bounds) - 1)
+norm = BoundaryNorm(bounds, cmap.N)
 ```
 
-## Colormaps
+## Encoding Advice by Plot Type
 
-| Use case | Colormap | Notes |
-|----------|----------|-------|
-| Diverging difference (SSP/trend) | `RdBu_r` | Pair with `TwoSlopeNorm` or symmetric `vmin=-vmax` |
-| Species richness / coexistence | `RdYlBu_r` | 5-level discrete: `BoundaryNorm([0,1,2,3,4,5], 5)` |
-| Log-scale intensity (mRQ, density) | `magma_r` | Pair with `LogNorm(vmin=..., vmax=...)` |
-| Sequential continuous | `viridis`, `cividis`, `mako` | Safe for colorblind |
+- Scatter groups: saturated edge/marker colors; low-alpha points when many observations
+- Box/violin: neutral fill + colored points if the distribution shape should not dominate
+- Heatmap: keep the scale interpretable and show a labeled colorbar
+- Stacked bars: use ordered, distinct categories with enough luminance separation
+- Maps: do not overload geography with too many discrete hues
 
-### Diverging map with `TwoSlopeNorm`
-```python
-from matplotlib.colors import TwoSlopeNorm
-vmax = np.nanpercentile(np.abs(diff_arr), 95)
-norm  = TwoSlopeNorm(vmin=-vmax, vcenter=0, vmax=vmax)
-im = ax.imshow(diff_arr, cmap='RdBu_r', norm=norm, ...)
-```
+## Grayscale and Accessibility Checks
 
-### 5-level discrete coexistence map
-```python
-from matplotlib.colors import BoundaryNorm
-bounds = [0, 1, 2, 3, 4, 5]
-cmap   = plt.cm.get_cmap('RdYlBu_r', 5)
-norm   = BoundaryNorm(bounds, cmap.N)
-im = ax.imshow(richness_arr, cmap=cmap, norm=norm, ...)
-```
+- Check whether adjacent categories differ in lightness, not only hue
+- For >6 categories, combine color with marker or linestyle differences
+- Avoid red-green as the sole contrast
+- Use dark outlines when light fills abut white backgrounds
 
-### Log-scale raster
-```python
-from matplotlib.colors import LogNorm
-norm = LogNorm(vmin=np.nanpercentile(arr[arr > 0], 5),
-               vmax=np.nanpercentile(arr[arr > 0], 95))
-im = ax.imshow(arr, cmap='magma_r', norm=norm, ...)
-```
+## Forbidden or High-Risk Choices
 
-## Forbidden Colormaps
+Never use:
+- `jet`
+- `rainbow`
+- `gist_rainbow`
+- unlabeled custom gradients with non-monotonic luminance
 
-`jet`, `rainbow`, `hsv`, `gist_rainbow` — never use these.
-Avoid explicit red-green pairings (colorblind inaccessible).
+Use with caution:
+- saturated neon palettes for publication
+- many-category stacked bars with similar hues
+- diverging colormaps when the midpoint has no scientific meaning

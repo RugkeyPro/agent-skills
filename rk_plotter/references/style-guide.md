@@ -1,129 +1,106 @@
 # Style Guide — rk_plotter
 
-## Global rcParams (set by `plot_config.py`)
+## Core Visual Principles
 
-| Property | Value |
-|----------|-------|
-| Backend | `Agg` (headless) |
-| Font family | `Arial`, `Helvetica` (sans-serif) |
-| `font.size` | 8 pt |
-| `axes.labelsize` | 9 pt |
-| `xtick.labelsize` | 7 pt |
-| `ytick.labelsize` | 7 pt |
-| `legend.fontsize` | 7 pt |
-| `legend.frameon` | False |
-| `axes.spines.right` | False |
-| `axes.spines.top` | False |
-| `axes.linewidth` | 0.5 pt |
-| `figure.dpi` | 300 |
-| `savefig.dpi` | 600 |
-| `savefig.transparent` | True |
-| `pdf.fonttype` | 42 (embedded, Illustrator-editable) |
-| `svg.fonttype` | `'none'` (text as text, not paths) |
+- Prioritize interpretation speed over ornament
+- Keep visual hierarchy obvious: data first, guides second, annotations third
+- Use the minimum number of encodings needed to communicate the result
+- Prefer small multiples over overcrowded single panels
+- Match the figure style to the output context: publication, report, slide, or supplementary material
 
-## Typical Figure Sizes
+## Recommended rcParams Baseline
 
-| Category | figsize (inches) |
-|----------|-----------------|
-| Single-panel stats | `(5, 4)`, `(6, 4)`, `(6, 4.5)`, `(6, 5)`, `(6.5, 4.5)` |
-| Multi-panel 1×4 stats | `(15, 3.5)`, `(16, 4.5)` |
-| Multi-panel 1×5 stats | `(20, 4)`, `(20, 5)` |
-| Global map | `(12, 7)`, `(10, 5)` |
-| SEM path diagram | `(6, 7)` |
-| GCB single-column | 88 mm ≈ 3.46" |
-| GCB double-column | 183 mm ≈ 7.2" |
+Use as a default starting point when the repository does not already define plotting defaults.
 
-## Line and Marker Widths
+| Property | Recommended value |
+|----------|-------------------|
+| Backend | `Agg` for scripts |
+| Font family | `Arial`, `Helvetica`, `DejaVu Sans` fallback |
+| `font.size` | 8–9 pt publication; 10–12 pt slides |
+| `axes.labelsize` | 9–10 pt publication |
+| `axes.titlesize` | 9–10 pt publication |
+| `xtick.labelsize` | 7–8 pt publication |
+| `ytick.labelsize` | 7–8 pt publication |
+| `legend.fontsize` | 7–8 pt publication |
+| `legend.frameon` | `False` unless legend overlaps complex data |
+| `axes.spines.right` | `False` |
+| `axes.spines.top` | `False` |
+| `axes.linewidth` | `0.5`–`0.8` pt |
+| `figure.dpi` | `300` |
+| `savefig.dpi` | `600` |
+| `savefig.transparent` | `True` for manuscript figures when acceptable |
+| `pdf.fonttype` | `42` |
+| `svg.fonttype` | `'none'` |
 
-| Element | Width |
-|---------|-------|
-| Axis spines | 0.5 pt |
-| Data lines (time series) | 1.0–1.5 pt |
-| Error/grid lines | 0.6–0.8 pt |
-| Significance bracket | 1 pt, black |
-| SEM arrow | 2–4 pt (varies by coefficient magnitude) |
-| Map coastline | 0.5–0.8 pt |
+## Figure Size Presets
 
-## Font Rules
+| Context | Recommended figsize |
+|---------|----------------------|
+| Single-panel publication | `(5, 4)` or `(6, 4)` |
+| Wide comparison panel | `(7.2, 4)` |
+| 2×2 multi-panel | `(7.2, 6.2)` |
+| 1×4 strip of panels | `(12, 3.2)` to `(14, 3.8)` |
+| Global map | `(8, 4.5)` to `(10, 5.5)` |
+| Poster/presentation | scale up 1.3×–1.8× from publication default |
 
-All text uses **Arial** (fallback: Helvetica). Three weights/styles only:
+Journal heuristics:
+- single-column width: ~85–90 mm
+- double-column width: ~175–185 mm
 
-| Style | When to use | matplotlib parameter |
-|-------|-------------|---------------------|
-| **Bold** | Panel labels `(a) Title`; key stats in annotation boxes; figure titles | `fontweight='bold'` |
-| Regular | Axis labels, tick labels, legend entries, colorbar labels, body annotations | *(default)* |
-| *Italic* | Genus/species Latin names in any label or title | `fontstyle='italic'` or `$\it{Name}$` |
+## Typography Rules
 
-Rules:
-- **Bold**: panel labels, significance stars inside brackets, dominant numbers in callouts
-- **Regular**: all axes labels (`ax.set_xlabel/ylabel`), tick labels, legend text, colorbar label, general annotation text
-- **Italic**: Latin binomials only (e.g. *Acropora*, *Symbiodinium*); common names and non-Latin terms stay roman
-- Avoid mixing bold + italic unless a species name appears inside a bold panel label
+- Use bold sparingly: panel labels, compact callouts, or short section titles
+- Use italics only when scientifically required, such as Latin names or mathematical notation
+- Keep axis labels descriptive and unit-bearing, e.g. `Concentration (mg L$^{-1}$)`
+- Use sentence case for titles unless a journal style explicitly prefers title case
 
-```python
-# Panel label (bold)
-ax.set_title(f'({chr(97+i)}) Title', loc='left', fontweight='bold')
+## Axes and Gridlines
 
-# Species name italic in tick label
-ax.set_xticklabels([f'$\\it{{{sp}}}$' for sp in species_list])
+- Remove top/right spines unless enclosing panels improves comparison
+- Use light horizontal gridlines only when they aid reading precise values
+- Start bars at zero unless a justified broken-axis pattern is clearly disclosed
+- For log scales, label the base or communicate that the axis is logarithmic
+- For temporal axes, avoid overcrowded tick labels; aggregate or rotate if needed
 
-# Annotation box (regular text, bold value)
-ax.text(0.05, 0.05, f"Slope: {slope:+.2f}%/yr",
-        transform=ax.transAxes, fontsize=8.5, fontweight='bold',
-        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
-```
+## Legends
 
-## Spines Convention
+- Prefer direct labeling when only 2–3 lines are present
+- Use a shared legend for faceted or multi-panel plots when categories are consistent
+- Keep legend order aligned with plotting order and scientific logic
+- Avoid duplicating information already encoded in panel titles or axis labels
+
+## Colorbars
 
 ```python
-# Inherited from rcParams (preferred):
-# axes.spines.right: False
-# axes.spines.top: False
-
-# Manual override when needed:
-ax.spines[['top', 'right']].set_visible(False)
-
-# Seaborn plots:
-sns.despine(ax=ax)
-```
-
-## Colorbar Style
-
-```python
-cbar = fig.colorbar(im, ax=ax, shrink=0.7, pad=0.02)
+cbar = fig.colorbar(im, ax=ax, shrink=0.8, pad=0.02)
 cbar.ax.tick_params(labelsize=7)
-cbar.set_label("Label (unit)", fontsize=8)
+cbar.set_label("Label (unit)")
 cbar.outline.set_linewidth(0.5)
 ```
 
-## Map Style (Cartopy)
+Rules:
+- Use one shared colorbar for comparable map panels
+- Fix limits across comparable panels
+- Label the physical meaning and units, not just the variable name
 
-```python
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
+## Layout and Multi-Panel Figures
 
-proj = ccrs.PlateCarree()
-ax = fig.add_subplot(gs[i], projection=proj)
-ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
-ax.add_feature(cfeature.LAND, facecolor='#f0f0f0', zorder=1)
-ax.add_feature(cfeature.COASTLINE, linewidth=0.5, zorder=2)
-ax.add_feature(cfeature.BORDERS, linewidth=0.3, linestyle=':', zorder=2)
-ax.gridlines(draw_labels=True, linewidth=0.3, color='gray', alpha=0.5,
-             xlocs=range(-180, 181, 30), ylocs=range(-90, 91, 15))
-```
+- Use aligned axes whenever direct comparison matters
+- Reserve whitespace for legends, colorbars, and annotations rather than letting them overlap data
+- Keep panel labels consistent: `(a)`, `(b)`, `(c)` at upper-left
+- Use `GridSpec` when maps, marginal plots, or unequal panel widths are needed
+- Prefer shared x/y limits when the purpose is comparison across panels
 
-For width-ratio multi-panel maps:
-```python
-from matplotlib.gridspec import GridSpec
-ratios = [(lon_max-lon_min) for lon_min, lon_max in extents]
-gs = GridSpec(1, N, width_ratios=ratios, wspace=0.05)
-```
+## Annotation Style
 
-## White-outline Map Text
+- Annotations should clarify a result, not restate the whole caption
+- Keep annotation boxes compact and positioned away from dense data regions
+- Use white backing or stroke effects only when text overlays complex raster or point clouds
+- Report sample sizes when omission could mislead interpretation
 
-```python
-import matplotlib.patheffects as pe
-ax.text(lon, lat, "Label",
-        fontsize=7, ha='center', va='center',
-        path_effects=[pe.withStroke(linewidth=1.5, foreground='white')])
-```
+## Export Rules
+
+- Save vector output (`.svg`, optionally `.pdf`) for publication and editing
+- Save `.png` at 600 dpi for quick sharing or manuscript upload systems
+- Check for clipped labels, missing fonts, oversized file output, and rasterization artifacts
+- Always close figures after export in script workflows
