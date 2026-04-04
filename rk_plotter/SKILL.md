@@ -1,223 +1,206 @@
 ---
 name: rk_plotter
-description: "Scientific plotting skill for marine ecology figures. Use when: creating matplotlib figures, plotting species distribution maps, time series, boxplots, heatmaps, SEM path diagrams, cartopy geographic maps, or any publication-quality scientific plot following GCB journal style. Triggers on: matplotlib, cartopy, seaborn, scientific figure, publication plot, species map, MHW boxplot, time series trend, correlation heatmap, SEM diagram, raster map, coexistence map, divergence map, centroid shift."
-argument-hint: "Describe the plot type, data source, and output figure name"
+description: "General-purpose scientific plotting skill for Python. Use when creating or refactoring publication-quality figures with matplotlib, seaborn, pandas plotting, cartopy, scipy, statsmodels, or numpy-based visualization workflows. Triggers on: scientific plotting, publication figure, matplotlib script, seaborn chart, environmental map, time series, scatter plot, boxplot, stacked bar chart, heatmap, uncertainty plot, statistical annotation, figure styling, color palette selection, journal-ready visualization, or requests for choosing the right chart."
+argument-hint: "Describe the scientific question, plot type or comparison goal, input data structure, grouping variables, optional statistical needs, target style/journal, and expected output files"
 ---
 
-# rk_plotter — Marine Ecology Scientific Plotting Skill
+# rk_plotter — General Scientific Plotting Skill
 
 ## When to Use
-- Creating any new `plot_*.py` script in this project
-- Generating matplotlib publication figures (maps, time series, boxplots, heatmaps, SEM diagrams)
-- Asking how to style axes, save figures, or annotate statistics in this codebase
-- Debugging figure layout or color conventions
+- Creating or modifying any Python plotting script, especially `plot_*.py`
+- Turning tabular, matrix, raster, or geospatial data into publication-quality figures
+- Choosing an appropriate chart type for a scientific question before implementation
+- Standardizing figure style, layout, annotation, legends, colorbars, or export settings
+- Adding statistical summaries, uncertainty bands, significance markers, or model-fit annotations
+- Producing figures for papers, reports, supplementary material, posters, or presentations
 
-## Core Rules (Non-Negotiable)
+## What This Skill Optimizes For
+- Clear scientific communication over decoration
+- Reproducible one-script-per-figure workflows
+- Consistent configuration, typography, palette, and export conventions
+- Sensible defaults for matplotlib and seaborn, with cartopy/raster support when needed
+- Honest statistical communication, including uncertainty and method boundaries
 
-1. **Always** `import matplotlib; matplotlib.use('Agg')` BEFORE any other matplotlib import
-2. **Always** `from plot_config import FIG_DIR, SPECIES_COLORS, SPECIES_ORDER, get_base_filename` and apply rcParams via that module (never re-define globally)
-3. **Always** end every script with `plt.tight_layout()` → `fig.savefig(...)` → `plt.close(fig)`
-4. **Always** save two formats: `.svg` + `.png` (600 dpi, transparent); add `.pdf` for main figures
-5. **Never** use red-green color contrast, `jet`, or `rainbow` colormaps
+## Input Contract
 
----
+Collect or infer the following before writing code. If key details are missing, ask concise follow-up questions.
 
-## Procedure
+### 1. Scientific intent
+- What question should the figure answer?
+- Is the goal comparison, trend, relationship, composition, distribution, uncertainty, or spatial pattern?
+- What is the expected reader action: identify a difference, compare scenarios, inspect variability, or localize hotspots?
 
-### Step 1 — File Setup
+### 2. Data contract
+- Source type: `DataFrame`, CSV, Excel, matrix, NetCDF, GeoTIFF, shapefile, GeoJSON, model output, or aggregated summary table
+- Variable roles: `x`, `y`, `hue`, `size`, `style`, `facet`, `label`, `weight`
+- Units, transformations, missing-value rules, detection limits, and time/spatial resolution
+- Whether data are raw observations, summaries, model predictions, or uncertainty intervals
+
+### 3. Statistical contract
+- Whether to show raw points, mean ± SD, mean ± SE, 95% CI, quantiles, fitted trend, or posterior interval
+- Whether hypothesis testing is needed, and if so which family: parametric, nonparametric, regression, correlation, contingency, or permutation
+- Whether multiple-comparison correction, effect sizes, or sample sizes must be shown
+- Whether the user wants significance marks, model coefficients, or only descriptive uncertainty
+
+### 4. Output contract
+- Output filename stem and directory
+- Required formats: usually `.svg` + `.png`, optional `.pdf`
+- Intended use: journal, slide deck, report, dashboard snapshot, or exploratory notebook export
+- Preferred style constraints: journal template, grayscale-safe, colorblind-safe, dark/light background, bilingual labels, aspect ratio limits
+
+## Core Rules
+
+1. Prefer **one figure script per output figure**. Keep data loading, transformation, plotting, and export in the same script unless the repository already uses shared helpers.
+2. Use a **configuration module** if the repository already has one. Reuse rcParams, output directories, palette constants, and naming helpers instead of redefining them in every script.
+3. If using matplotlib scripts, place `import matplotlib; matplotlib.use('Agg')` **before other matplotlib imports** unless the repository clearly uses a different backend pattern.
+4. Save publication outputs as **SVG + PNG** by default; add **PDF** when editable vector output or journal submission requires it.
+5. Favor **colorblind-safe palettes**, perceptually uniform sequential maps, and explicit uncertainty displays.
+6. Avoid misleading defaults: 3D charts without a strong reason, dual y-axes for unrelated quantities, truncated axes without disclosure, and rainbow/jet-style colormaps.
+7. Match annotation intensity to evidence. Do not overload figures with p-values, stars, and text boxes when the core pattern is already clear.
+
+## Implementation Framework
+
+### Step 1 — Confirm the request with the input contract
+- Identify the scientific question and audience
+- Confirm data shape and variable mapping
+- Decide whether the figure is exploratory, report-grade, or publication-grade
+- Determine whether statistics are descriptive, inferential, or model-based
+
+### Step 2 — Choose the figure family
+- Read `references/plot-selection.md` when the user is unsure what to draw
+- Map the task to one of these families:
+  - Comparison: bar, box, violin, strip, swarm, raincloud, lollipop
+  - Trend: line, rolling trend, ribbon plot, seasonal facets
+  - Relationship: scatter, hexbin, density contour, regression panel
+  - Composition: stacked bar, area chart, mosaic plot, alluvial
+  - Distribution: histogram, KDE, ECDF, ridgeline
+  - Matrix/structure: heatmap, clustered heatmap, correlation matrix
+  - Space/environment: raster map, choropleth, station map, transect section
+  - Model/statistical summary: coefficient plot, effect plot, forest plot, residual plot
+
+### Step 3 — Keep the script structure simple
+
+Use this script order unless the repository has a stronger local convention:
+
+1. Imports
+2. Configuration/constants
+3. Data loading and validation
+4. Data transformation for plotting
+5. Figure and axes creation
+6. Plot layers
+7. Labels, legends, annotations, colorbars
+8. Statistical overlays if needed
+9. Export and cleanup
+
+### Step 4 — Use robust Python plotting foundations
+
+Typical packages:
+- Core: `matplotlib`, `numpy`, `pandas`, `pathlib`
+- Statistical plotting: `seaborn`, `scipy`, `statsmodels`
+- Matrix/scientific helpers: `matplotlib.colors`, `matplotlib.gridspec`
+- Geospatial/environmental: `cartopy`, `geopandas`, `rasterio`, `xarray`
+
+When building scripts:
+- Prefer explicit axes objects (`fig, ax = plt.subplots(...)`) over stateful plotting
+- Use `constrained_layout=True` or `plt.tight_layout()` carefully; confirm labels are not clipped
+- Use shared legends/colorbars for multi-panel figures whenever possible
+- Close figures explicitly after saving
+
+### Step 5 — Separate config from figure logic
+
+Keep these items centralized when possible:
+- rcParams and font defaults
+- output directory and naming helpers
+- canonical palette lists
+- journal/report size presets
+- reusable annotation helpers
+
+If the repo has no plotting config yet, create a light `plot_config.py` or equivalent only when the task actually needs reusable settings. Do not add scaffolding unnecessarily.
+
+### Step 6 — Match the plot type to the message
+
+Before coding, answer all of the following:
+- What is the primary comparison unit?
+- What should the reader compare first?
+- What must remain visible: raw data, distribution shape, central tendency, trend, or geography?
+- Which uncertainty measure is scientifically defensible here?
+- Which visual encodings are redundant or distracting?
+
+Read `references/plot-types.md` for concrete implementation patterns by chart family.
+
+### Step 7 — Handle statistics responsibly
+
+Read `references/statistical-boundaries.md` whenever the figure includes inferential claims.
+
+Default principles:
+- Prefer showing the underlying data distribution when sample sizes are moderate
+- Prefer confidence/credible intervals over stars when the figure is about estimation
+- Show effect size, slope, odds ratio, or coefficient magnitude when that is more informative than a p-value
+- Use multiple-comparison correction when many pairwise tests or matrix cells are annotated
+- Avoid implying causality from observational scatter plots without strong design support
+
+### Step 8 — Export cleanly
+
+Default export sequence:
+1. finalize layout
+2. save SVG
+3. save PNG at high resolution
+4. optionally save PDF
+5. close figure
+
+## Recommended Default Pattern
 
 ```python
 import matplotlib
-matplotlib.use('Agg')           # MUST be first
+matplotlib.use("Agg")
 
+from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import os
-from pathlib import Path
-from plot_config import FIG_DIR, SPECIES_COLORS, SPECIES_ORDER, get_base_filename
-```
 
-Add optional imports only when needed:
-- Maps: `import cartopy.crs as ccrs; import cartopy.feature as cfeature`
-- Seaborn: `import seaborn as sns` (trends, boxplots, heatmaps)
-- Raster: `import rasterio`
-- Stats: `from scipy import stats`
-- Smooth: `from scipy.ndimage import gaussian_filter`
-- Custom SEM shapes: `import matplotlib.patches as mpatches; import matplotlib.path as mpath`
+# optional: seaborn, scipy, statsmodels, cartopy, geopandas, rasterio, xarray
 
-### Step 2 — Data Loading
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = PROJECT_ROOT / "figures"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-Use `pathlib` and `PROJECT_ROOT`-relative paths:
-```python
-PROJECT_ROOT = Path(__file__).resolve().parents[1]   # preferred
-data_path = PROJECT_ROOT / "output" / "subfolder" / "file.csv"
-df = pd.read_csv(data_path).dropna()
-```
+fig, ax = plt.subplots(figsize=(6, 4))
 
-For rasters (GeoTIFF):
-```python
-import rasterio
-with rasterio.open(tif_path) as src:
-    arr = src.read(1).astype(np.float32)
-    arr[arr == src.nodata] = np.nan
-```
+# plot layers here
 
-For batch files:
-```python
-import glob
-files = glob.glob(str(PROJECT_ROOT / "validation" / "*.csv"))
-```
-
-Use `plot_data_helpers` functions when loading species spatial data:
-- `load_annual_map(species, year, scope)` → `(array, extent)`
-- `load_period_mean_map(species, years, scope)` → mean raster
-- `compute_annual_or10_area_change(species, threshold, scope)` → area time series
-
-### Step 3 — Figure Creation
-
-Choose layout pattern:
-
-| Plot type | Code pattern |
-|-----------|-------------|
-| Single panel | `fig, ax = plt.subplots(figsize=(6, 4))` |
-| 1×N stats panels | `fig, axes = plt.subplots(1, N, figsize=(4*N, 4), sharey=False)` |
-| Map with ratio | `gs = GridSpec(1, N, width_ratios=[...]); ax = fig.add_subplot(gs[i], projection=proj)` |
-| SEM diagram | `fig, ax = plt.subplots(figsize=(6, 7))` |
-
-**GCB column width targets**: single-column 88 mm (3.46"), double-column 183 mm (7.2")
-
-### Step 4 — Axis Styling
-
-rcParams from `plot_config.py` handle most defaults. Per-script overrides:
-```python
-sns.despine(ax=ax)                          # use in seaborn plots
-ax.spines[['top','right']].set_visible(False)  # manual fallback
-
-# Species italic labels
-ax.set_xticklabels(
-    [f"$\\it{{{sp}}}$" if sp != "Community" else sp for sp in SPECIES_ORDER],
-    rotation=30, ha='right'
-)
-
-# Rotated region labels
-ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha='right')
-```
-
-**Panel labels** (auto-generate a/b/c/d):
-```python
-for i, (ax, title) in enumerate(zip(axes, titles)):
-    ax.set_title(f'({chr(97+i)}) {title}', loc='left', fontweight='bold')
-```
-
-### Step 5 — Statistical Annotations
-
-See [stat-annotations reference](./references/stat-annotations.md) for full patterns.
-
-**Significance stars** (universal mapping):
-```python
-def sig_label(p):
-    if p < 0.001: return '***'
-    if p < 0.01:  return '**'
-    if p < 0.05:  return '*'
-    if p < 0.1:   return '.'
-    return 'ns'
-```
-
-**Bracket between two bars/boxes**:
-```python
-ax.plot([x1, x1, x2, x2], [y, y+h, y+h, y], lw=1, c='k')
-ax.text((x1+x2)*0.5, y+h*1.02, sig_label(p), ha='center', va='bottom', fontweight='bold')
-```
-
-**Regression annotation box** (time series):
-```python
-ax.text(0.05, 0.05, f"Slope: {slope:+.2f}%/yr\nP < 0.001",
-        transform=ax.transAxes, fontsize=8.5, fontweight='bold',
-        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
-```
-
-**95% CI shaded band**:
-```python
-ax.fill_between(x, y_reg - conf, y_reg + conf, color=color, alpha=0.12)
-```
-
-### Step 6 — Colors
-
-See [color-palettes reference](./references/color-palettes.md) for full palette tables.
-
-Quick reference:
-```python
-from plot_config import SPECIES_COLORS   # Acropora red, Lobophora green, Scarus blue, Cephalopholis purple
-
-REGION_COLORS = {
-    "Global":         "#2C3E50",
-    "Caribbean":      "#E74C3C",
-    "GreatBarrierReef": "#27AE60",
-    "SoutheastAsia":  "#8E44AD",
-}
-MHW_COLORS = {"low": "#3498DB", "high": "#E74C3C"}
-SSP_COLORS = {"SSP245_lo": "#90CAF9", "SSP245_hi": "#1565C0",
-              "SSP585_lo": "#EF9A9A", "SSP585_hi": "#B71C1C"}
-```
-
-**Colormaps**:
-- Diverging difference maps → `RdBu_r` + `TwoSlopeNorm` or symmetric `vmin/vmax`
-- Species richness / coexistence → `RdYlBu_r` (5-level discrete)
-- Log-scale intensity → `magma_r` + `LogNorm`
-- Sequential data → `viridis`, `cividis`, or `mako`
-
-### Step 7 — Figure Saving
-
-```python
-base = get_base_filename(__file__)    # derives name from script filename
-
-out_svg = FIG_DIR / f"{base}.svg"
-out_png = FIG_DIR / f"{base}.png"
-out_pdf = FIG_DIR / f"{base}.pdf"    # optional, for main figures
-
-plt.tight_layout()
-fig.savefig(out_svg, transparent=True)
-fig.savefig(out_png, dpi=600, transparent=True, bbox_inches='tight')
-fig.savefig(out_pdf, bbox_inches='tight')  # if needed
-plt.close(fig)
-print(f"Saved {out_png}")
-```
-
-For **explicit** naming (skip `get_base_filename`):
-```python
-fig.savefig(FIG_DIR / "fig4a_mrq_map.svg", transparent=True)
-fig.savefig(FIG_DIR / "fig4a_mrq_map.png", dpi=600, transparent=True, bbox_inches='tight')
+fig.savefig(OUTPUT_DIR / "figure_name.svg", transparent=True, bbox_inches="tight")
+fig.savefig(OUTPUT_DIR / "figure_name.png", dpi=600, transparent=True, bbox_inches="tight")
 plt.close(fig)
 ```
 
----
+## Reference Map
 
-## Plot-Type Quick References
+Read only the files relevant to the current task:
 
-| Plot type | Key imports | Reference script |
-|-----------|------------|-----------------|
-| Global/regional raster map | `cartopy`, `rasterio`, `TwoSlopeNorm` | `plot_fig4a_mrq_map.py` |
-| Multi-species time series | `scipy.stats`, `fill_between` | `plot_fig4b_epop_trends.py`, `plot_area_time_series.py` |
-| MHW grouped boxplots | `seaborn`, `sig brackets` | `plot_fig4c_mhw_boxplots.py` |
-| Correlation heatmap | `seaborn`, `annotate cells` | `plot_fig4d_correlation_heatmap.py` |
-| Scatter validation facets | `sns.FacetGrid`, OLS | `plot_fig6d.py` |
-| SEM path diagram | `FancyArrowPatch`, `mpath` | `plot_sem_global_path.py` |
-| SEM bar/synergy | `bar + yerr=1.96*sd` | `plot_sem_synergy_bars.py` |
-| Coexistence raster map | `RdYlBu_r` discrete, `cartopy` | `plot_global_coexistence_map.py` |
-| Centroid shift map | `GridSpec` width_ratios, arrows | `plot_centroid_shift_maps.py` |
-| Spatial divergence map | `RdBu_r`, `TwoSlopeNorm` | `plot_spatial_divergence_maps.py` |
+- `references/style-guide.md` — typography, figure sizes, layout, legends, colorbars, export
+- `references/color-palettes.md` — qualitative, sequential, diverging, cyclic, and grayscale-safe palette guidance
+- `references/stat-annotations.md` — significance labels, regression annotations, intervals, model callouts
+- `references/plot-selection.md` — choosing the right chart for the scientific question
+- `references/plot-types.md` — implementation guidance for common scientific chart families
+- `references/statistical-boundaries.md` — when common plotting + testing combinations are appropriate or misleading
+- `references/quality-checklist.md` — final quality-control checklist before finishing a figure
 
----
+## Quick Plot-Type Guide
 
-## Checklist Before Finishing
+| Goal | Best starting point | Better alternatives when needed |
+|------|---------------------|---------------------------------|
+| Compare 2–8 groups | boxplot / violin + points | raincloud, estimation plot |
+| Show group means only | point-range / bar with intervals | dot plot, lollipop |
+| Show temporal trend | line + interval ribbon | seasonal facets, rolling median |
+| Show bivariate relationship | scatter + fit | hexbin, density contour |
+| Show composition across groups | stacked bar | normalized stacked bar, small multiples |
+| Show matrix structure | heatmap | clustered heatmap, pair plot |
+| Show spatial pattern | raster map / choropleth | contours, station map, faceted maps |
+| Show model results | coefficient/effect plot | forest plot, marginal means |
 
-- [ ] `matplotlib.use('Agg')` is the FIRST matplotlib call
-- [ ] `from plot_config import ...` brings in rcParams automatically
-- [ ] All font sizes use rcParams defaults (no explicit fontsize overrides unless deliberately deviating)
-- [ ] Top and right spines are removed
-- [ ] Species names are italicized (except "Community")
-- [ ] Files saved as SVG + PNG (600 dpi, transparent)
-- [ ] `plt.close(fig)` is called at the end
-- [ ] No `jet`, `rainbow`, or red-green contrast colormaps used
-- [ ] Output path is inside `FIG_DIR`
+## Before Finishing
+
+- Confirm the figure answers the user’s scientific question directly
+- Verify that chart type, scales, uncertainty, and annotations are defensible
+- Use `references/quality-checklist.md` as the final gate
