@@ -19,6 +19,8 @@ argument-hint: "Describe the plot type, data source, and output figure name"
 3. **Always** end every script with `plt.tight_layout()` → `fig.savefig(...)` → `plt.close(fig)`
 4. **Always** save two formats: `.svg` + `.png` (600 dpi, transparent); add `.pdf` for main figures
 5. **Never** use red-green color contrast, `jet`, or `rainbow` colormaps
+6. **Always** set `matplotlib.rcParams['svg.fonttype'] = 'none'` so SVG files contain editable `<text>` elements rather than outlined paths — required for font editing in Adobe Illustrator
+7. **Always** export each subplot as a **separate single-panel figure** (independent PNG + SVG); never rely solely on a combined multi-panel save
 
 ---
 
@@ -29,6 +31,7 @@ argument-hint: "Describe the plot type, data source, and output figure name"
 ```python
 import matplotlib
 matplotlib.use('Agg')           # MUST be first
+matplotlib.rcParams['svg.fonttype'] = 'none'   # keep text as <text> in SVG, editable in Illustrator
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -191,6 +194,56 @@ fig.savefig(FIG_DIR / "fig4a_mrq_map.png", dpi=600, transparent=True, bbox_inche
 plt.close(fig)
 ```
 
+### Step 7b — Per-Panel Export (REQUIRED)
+
+Every subplot **must** also be saved as a standalone figure. Wrap each panel's drawing logic
+in a dedicated function, then call `save_panel` / `save_map_panel` once per panel.
+
+**Standard axes (non-cartopy)**:
+```python
+def save_panel(draw_fn, panel_label: str, base: str, fig_kw: dict | None = None):
+    """Create a fresh single-panel figure, run draw_fn(ax), and save SVG + PNG."""
+    fig_kw = fig_kw or {"figsize": (3.46, 3)}   # default: single GCB column width
+    fig, ax = plt.subplots(**fig_kw)
+    draw_fn(ax)
+    plt.tight_layout()
+    fig.savefig(FIG_DIR / f"{base}_{panel_label}.svg", transparent=True)
+    fig.savefig(FIG_DIR / f"{base}_{panel_label}.png",
+                dpi=600, transparent=True, bbox_inches='tight')
+    plt.close(fig)
+    print(f"Saved panel {panel_label}")
+
+# Usage:
+save_panel(lambda ax: draw_time_series(ax, species="Acropora"), "a", base)
+save_panel(lambda ax: draw_time_series(ax, species="Scarus"),   "b", base)
+```
+
+**Cartopy GeoAxes** (projection required):
+```python
+import cartopy.crs as ccrs
+
+def save_map_panel(draw_fn, panel_label: str, base: str,
+                  projection=ccrs.PlateCarree(), figsize=(4, 3)):
+    fig = plt.figure(figsize=figsize)
+    ax  = fig.add_subplot(1, 1, 1, projection=projection)
+    draw_fn(ax)
+    plt.tight_layout()
+    fig.savefig(FIG_DIR / f"{base}_{panel_label}.svg", transparent=True)
+    fig.savefig(FIG_DIR / f"{base}_{panel_label}.png",
+                dpi=600, transparent=True, bbox_inches='tight')
+    plt.close(fig)
+    print(f"Saved map panel {panel_label}")
+
+# Usage:
+save_map_panel(lambda ax: draw_global_map(ax),   "a", base, figsize=(7, 4))
+save_map_panel(lambda ax: draw_caribbean(ax),    "b", base, figsize=(4, 3))
+```
+
+> **Why separate panels?**  
+> Adobe Illustrator imports each SVG as a self-contained artboard.  
+> A combined multi-panel figure makes individual panel edits difficult
+> and may break layer/group structure. Per-panel files give full editorial control.
+
 ---
 
 ## Plot-Type Quick References
@@ -213,11 +266,13 @@ plt.close(fig)
 ## Checklist Before Finishing
 
 - [ ] `matplotlib.use('Agg')` is the FIRST matplotlib call
+- [ ] `matplotlib.rcParams['svg.fonttype'] = 'none'` set immediately after `matplotlib.use('Agg')` — ensures SVG text is editable in Adobe Illustrator
 - [ ] `from plot_config import ...` brings in rcParams automatically
 - [ ] All font sizes use rcParams defaults (no explicit fontsize overrides unless deliberately deviating)
 - [ ] Top and right spines are removed
 - [ ] Species names are italicized (except "Community")
 - [ ] Files saved as SVG + PNG (600 dpi, transparent)
-- [ ] `plt.close(fig)` is called at the end
+- [ ] **Each subplot exported as a separate standalone figure** using `save_panel` / `save_map_panel` — not only as part of a combined layout
+- [ ] `plt.close(fig)` is called after every panel save
 - [ ] No `jet`, `rainbow`, or red-green contrast colormaps used
 - [ ] Output path is inside `FIG_DIR`
