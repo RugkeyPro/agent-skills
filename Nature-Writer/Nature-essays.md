@@ -1,7 +1,3 @@
-以下是所有文献正文部分的Markdown格式转换，按文件顺序整理：
-
----
-
 # Habitat for Coilia nasus in southern Zhejiang Province, China, based on a maximum entropy model
 
 ## Abstract
