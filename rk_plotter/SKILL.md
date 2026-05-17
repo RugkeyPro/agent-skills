@@ -1,278 +1,63 @@
 ---
 name: rk_plotter
-description: "Scientific plotting skill for marine ecology figures. Use when: creating matplotlib figures, plotting species distribution maps, time series, boxplots, heatmaps, SEM path diagrams, cartopy geographic maps, or any publication-quality scientific plot following GCB journal style. Triggers on: matplotlib, cartopy, seaborn, scientific figure, publication plot, species map, MHW boxplot, time series trend, correlation heatmap, SEM diagram, raster map, coexistence map, divergence map, centroid shift."
-argument-hint: "Describe the plot type, data source, and output figure name"
+description: "通用科研绘图 skill。用于创建、重构、复用和渲染 publication-quality matplotlib 科学图，包括地图、时间序列、组间分布、散点/模型诊断、柱状/组成图、SHAP/机器学习解释图、雷达图、概念框架图和多面板科研图。触发场景：需要选择绘图模板、把随机示例数据替换为真实数据、统一字体/配色/导出格式、生成 PNG/PDF/SVG 图件、或检查科研图可读性与统计表达。"
 ---
 
-# rk_plotter — Marine Ecology Scientific Plotting Skill
+# rk_plotter 通用科研绘图
 
-## When to Use
-- Creating any new `plot_*.py` script in this project
-- Generating matplotlib publication figures (maps, time series, boxplots, heatmaps, SEM diagrams)
-- Asking how to style axes, save figures, or annotate statistics in this codebase
-- Debugging figure layout or color conventions
+## 工作流
 
-## Core Rules (Non-Negotiable)
+1. 先判断用户想表达的问题类型：空间分布、时间变化、组间差异、组成比例、模型诊断、机器学习解释、概念框架或多指标比较。
+2. 打开 `references/template-catalog.md`，选择最接近的 template id；不要从零重写已有图形结构。
+3. 用 `scripts/templates/<template_id>.py` 作为起点，把 `make_sample_data()` 的随机示例数据替换为用户数据，保留 `plot()` 和 `render()` 接口。
+4. 复用 `scripts/rk_plotter_core.py` 的 `apply_style()`、`save_figure()`、配色和尺寸常量；只有在期刊或用户明确要求时才局部覆盖样式。
+5. 生成图后按 `references/quality-checklist.md` 检查：图形是否回答问题、坐标轴是否清楚、统计注释是否诚实、颜色是否可区分、导出是否完整。
 
-1. **Always** `import matplotlib; matplotlib.use('Agg')` BEFORE any other matplotlib import
-2. **Always** `from plot_config import FIG_DIR, SPECIES_COLORS, SPECIES_ORDER, get_base_filename` and apply rcParams via that module (never re-define globally)
-3. **Always** end every script with `plt.tight_layout()` → `fig.savefig(...)` → `plt.close(fig)`
-4. **Always** save two formats: `.svg` + `.png` (600 dpi, transparent); add `.pdf` for main figures
-5. **Never** use red-green color contrast, `jet`, or `rainbow` colormaps
-6. **Always** set `matplotlib.rcParams['svg.fonttype'] = 'none'` so SVG files contain editable `<text>` elements rather than outlined paths — required for font editing in Adobe Illustrator
-7. **Always** export each subplot as a **separate single-panel figure** (independent PNG + SVG); never rely solely on a combined multi-panel save
+## 统一配置要求
 
----
+- 在任何独立绘图脚本中，先设置 `matplotlib.use("Agg")`，再导入 `matplotlib.pyplot`。
+- 保持 `matplotlib.rcParams["svg.fonttype"] = "none"`，确保 SVG 中的文字可编辑。
+- 默认输出 `png`, `pdf`, `svg`；PNG 用 600 dpi，所有格式使用 `bbox_inches="tight"` 和透明背景。
+- 保存后必须关闭 figure：使用 `save_figure()` 或显式 `plt.close(fig)`。
+- 禁用 `plt.show()`、`jet`、`rainbow` 和红绿对立作为主要编码。
+- 图中随机数据只能用于模板演示；交付用户图件前必须替换为真实数据或明确标注为模拟示例。
 
-## Procedure
+## 模板调用
 
-### Step 1 — File Setup
+列出模板：
 
-```python
-import matplotlib
-matplotlib.use('Agg')           # MUST be first
-matplotlib.rcParams['svg.fonttype'] = 'none'   # keep text as <text> in SVG, editable in Illustrator
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import os
-from pathlib import Path
-from plot_config import FIG_DIR, SPECIES_COLORS, SPECIES_ORDER, get_base_filename
+```bash
+python scripts/render_template.py --template hotspot_map --output-dir outputs --list
 ```
 
-Add optional imports only when needed:
-- Maps: `import cartopy.crs as ccrs; import cartopy.feature as cfeature`
-- Seaborn: `import seaborn as sns` (trends, boxplots, heatmaps)
-- Raster: `import rasterio`
-- Stats: `from scipy import stats`
-- Smooth: `from scipy.ndimage import gaussian_filter`
-- Custom SEM shapes: `import matplotlib.patches as mpatches; import matplotlib.path as mpath`
+渲染单个模板示例：
 
-### Step 2 — Data Loading
-
-Use `pathlib` and `PROJECT_ROOT`-relative paths:
-```python
-PROJECT_ROOT = Path(__file__).resolve().parents[1]   # preferred
-data_path = PROJECT_ROOT / "output" / "subfolder" / "file.csv"
-df = pd.read_csv(data_path).dropna()
+```bash
+python scripts/render_template.py --template scenario_uncertainty_timeseries --output-dir outputs --formats png,pdf,svg
 ```
 
-For rasters (GeoTIFF):
-```python
-import rasterio
-with rasterio.open(tif_path) as src:
-    arr = src.read(1).astype(np.float32)
-    arr[arr == src.nodata] = np.nan
-```
-
-For batch files:
-```python
-import glob
-files = glob.glob(str(PROJECT_ROOT / "validation" / "*.csv"))
-```
-
-Use `plot_data_helpers` functions when loading species spatial data:
-- `load_annual_map(species, year, scope)` → `(array, extent)`
-- `load_period_mean_map(species, years, scope)` → mean raster
-- `compute_annual_or10_area_change(species, threshold, scope)` → area time series
-
-### Step 3 — Figure Creation
-
-Choose layout pattern:
-
-| Plot type | Code pattern |
-|-----------|-------------|
-| Single panel | `fig, ax = plt.subplots(figsize=(6, 4))` |
-| 1×N stats panels | `fig, axes = plt.subplots(1, N, figsize=(4*N, 4), sharey=False)` |
-| Map with ratio | `gs = GridSpec(1, N, width_ratios=[...]); ax = fig.add_subplot(gs[i], projection=proj)` |
-| SEM diagram | `fig, ax = plt.subplots(figsize=(6, 7))` |
-
-**GCB column width targets**: single-column 88 mm (3.46"), double-column 183 mm (7.2")
-
-### Step 4 — Axis Styling
-
-rcParams from `plot_config.py` handle most defaults. Per-script overrides:
-```python
-sns.despine(ax=ax)                          # use in seaborn plots
-ax.spines[['top','right']].set_visible(False)  # manual fallback
-
-# Species italic labels
-ax.set_xticklabels(
-    [f"$\\it{{{sp}}}$" if sp != "Community" else sp for sp in SPECIES_ORDER],
-    rotation=30, ha='right'
-)
-
-# Rotated region labels
-ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha='right')
-```
-
-**Panel labels** (auto-generate a/b/c/d):
-```python
-for i, (ax, title) in enumerate(zip(axes, titles)):
-    ax.set_title(f'({chr(97+i)}) {title}', loc='left', fontweight='bold')
-```
-
-### Step 5 — Statistical Annotations
-
-See [stat-annotations reference](./references/stat-annotations.md) for full patterns.
-
-**Significance stars** (universal mapping):
-```python
-def sig_label(p):
-    if p < 0.001: return '***'
-    if p < 0.01:  return '**'
-    if p < 0.05:  return '*'
-    if p < 0.1:   return '.'
-    return 'ns'
-```
-
-**Bracket between two bars/boxes**:
-```python
-ax.plot([x1, x1, x2, x2], [y, y+h, y+h, y], lw=1, c='k')
-ax.text((x1+x2)*0.5, y+h*1.02, sig_label(p), ha='center', va='bottom', fontweight='bold')
-```
-
-**Regression annotation box** (time series):
-```python
-ax.text(0.05, 0.05, f"Slope: {slope:+.2f}%/yr\nP < 0.001",
-        transform=ax.transAxes, fontsize=8.5, fontweight='bold',
-        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
-```
-
-**95% CI shaded band**:
-```python
-ax.fill_between(x, y_reg - conf, y_reg + conf, color=color, alpha=0.12)
-```
-
-### Step 6 — Colors
-
-See [color-palettes reference](./references/color-palettes.md) for full palette tables.
-
-Quick reference:
-```python
-from plot_config import SPECIES_COLORS   # Acropora red, Lobophora green, Scarus blue, Cephalopholis purple
-
-REGION_COLORS = {
-    "Global":         "#2C3E50",
-    "Caribbean":      "#E74C3C",
-    "GreatBarrierReef": "#27AE60",
-    "SoutheastAsia":  "#8E44AD",
-}
-MHW_COLORS = {"low": "#3498DB", "high": "#E74C3C"}
-SSP_COLORS = {"SSP245_lo": "#90CAF9", "SSP245_hi": "#1565C0",
-              "SSP585_lo": "#EF9A9A", "SSP585_hi": "#B71C1C"}
-```
-
-**Colormaps**:
-- Diverging difference maps → `RdBu_r` + `TwoSlopeNorm` or symmetric `vmin/vmax`
-- Species richness / coexistence → `RdYlBu_r` (5-level discrete)
-- Log-scale intensity → `magma_r` + `LogNorm`
-- Sequential data → `viridis`, `cividis`, or `mako`
-
-### Step 7 — Figure Saving
+在新脚本中复用模板：
 
 ```python
-base = get_base_filename(__file__)    # derives name from script filename
+from scripts.templates.scenario_uncertainty_timeseries import plot, render
 
-out_svg = FIG_DIR / f"{base}.svg"
-out_png = FIG_DIR / f"{base}.png"
-out_pdf = FIG_DIR / f"{base}.pdf"    # optional, for main figures
-
-plt.tight_layout()
-fig.savefig(out_svg, transparent=True)
-fig.savefig(out_png, dpi=600, transparent=True, bbox_inches='tight')
-fig.savefig(out_pdf, bbox_inches='tight')  # if needed
-plt.close(fig)
-print(f"Saved {out_png}")
+fig, ax = plot(data=my_data)
+render("outputs", basename="my_scenario_figure", data=my_data)
 ```
 
-For **explicit** naming (skip `get_base_filename`):
-```python
-fig.savefig(FIG_DIR / "fig4a_mrq_map.svg", transparent=True)
-fig.savefig(FIG_DIR / "fig4a_mrq_map.png", dpi=600, transparent=True, bbox_inches='tight')
-plt.close(fig)
-```
+## 参考文件
 
-### Step 7b — Per-Panel Export (REQUIRED)
+- `references/template-catalog.md`：模板分类、适用数据、原始脚本来源和 preview 名称。
+- `references/style-guide.md`：字体、尺寸、坐标轴、图例、colorbar 和导出规范。
+- `references/color-palettes.md`：分类、连续、发散、log、地图、情景和模型比较配色。
+- `references/plot-selection.md`：按科学问题选择图形。
+- `references/statistical-boundaries.md` 与 `references/stat-annotations.md`：统计注释边界和常用标注写法。
+- `references/quality-checklist.md`：交付前检查清单。
 
-Every subplot **must** also be saved as a standalone figure. Wrap each panel's drawing logic
-in a dedicated function, then call `save_panel` / `save_map_panel` once per panel.
+## 资产位置
 
-**Standard axes (non-cartopy)**:
-```python
-def save_panel(draw_fn, panel_label: str, base: str, fig_kw: dict | None = None):
-    """Create a fresh single-panel figure, run draw_fn(ax), and save SVG + PNG."""
-    fig_kw = fig_kw or {"figsize": (3.46, 3)}   # default: single GCB column width
-    fig, ax = plt.subplots(**fig_kw)
-    draw_fn(ax)
-    plt.tight_layout()
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.svg", transparent=True)
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.png",
-                dpi=600, transparent=True, bbox_inches='tight')
-    plt.close(fig)
-    print(f"Saved panel {panel_label}")
-
-# Usage:
-save_panel(lambda ax: draw_time_series(ax, species="Acropora"), "a", base)
-save_panel(lambda ax: draw_time_series(ax, species="Scarus"),   "b", base)
-```
-
-**Cartopy GeoAxes** (projection required):
-```python
-import cartopy.crs as ccrs
-
-def save_map_panel(draw_fn, panel_label: str, base: str,
-                  projection=ccrs.PlateCarree(), figsize=(4, 3)):
-    fig = plt.figure(figsize=figsize)
-    ax  = fig.add_subplot(1, 1, 1, projection=projection)
-    draw_fn(ax)
-    plt.tight_layout()
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.svg", transparent=True)
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.png",
-                dpi=600, transparent=True, bbox_inches='tight')
-    plt.close(fig)
-    print(f"Saved map panel {panel_label}")
-
-# Usage:
-save_map_panel(lambda ax: draw_global_map(ax),   "a", base, figsize=(7, 4))
-save_map_panel(lambda ax: draw_caribbean(ax),    "b", base, figsize=(4, 3))
-```
-
-> **Why separate panels?**  
-> Adobe Illustrator imports each SVG as a self-contained artboard.  
-> A combined multi-panel figure makes individual panel edits difficult
-> and may break layer/group structure. Per-panel files give full editorial control.
-
----
-
-## Plot-Type Quick References
-
-| Plot type | Key imports | Reference script |
-|-----------|------------|-----------------|
-| Global/regional raster map | `cartopy`, `rasterio`, `TwoSlopeNorm` | `plot_fig4a_mrq_map.py` |
-| Multi-species time series | `scipy.stats`, `fill_between` | `plot_fig4b_epop_trends.py`, `plot_area_time_series.py` |
-| MHW grouped boxplots | `seaborn`, `sig brackets` | `plot_fig4c_mhw_boxplots.py` |
-| Correlation heatmap | `seaborn`, `annotate cells` | `plot_fig4d_correlation_heatmap.py` |
-| Scatter validation facets | `sns.FacetGrid`, OLS | `plot_fig6d.py` |
-| SEM path diagram | `FancyArrowPatch`, `mpath` | `plot_sem_global_path.py` |
-| SEM bar/synergy | `bar + yerr=1.96*sd` | `plot_sem_synergy_bars.py` |
-| Coexistence raster map | `RdYlBu_r` discrete, `cartopy` | `plot_global_coexistence_map.py` |
-| Centroid shift map | `GridSpec` width_ratios, arrows | `plot_centroid_shift_maps.py` |
-| Spatial divergence map | `RdBu_r`, `TwoSlopeNorm` | `plot_spatial_divergence_maps.py` |
-
----
-
-## Checklist Before Finishing
-
-- [ ] `matplotlib.use('Agg')` is the FIRST matplotlib call
-- [ ] `matplotlib.rcParams['svg.fonttype'] = 'none'` set immediately after `matplotlib.use('Agg')` — ensures SVG text is editable in Adobe Illustrator
-- [ ] `from plot_config import ...` brings in rcParams automatically
-- [ ] All font sizes use rcParams defaults (no explicit fontsize overrides unless deliberately deviating)
-- [ ] Top and right spines are removed
-- [ ] Species names are italicized (except "Community")
-- [ ] Files saved as SVG + PNG (600 dpi, transparent)
-- [ ] **Each subplot exported as a separate standalone figure** using `save_panel` / `save_map_panel` — not only as part of a combined layout
-- [ ] `plt.close(fig)` is called after every panel save
-- [ ] No `jet`, `rainbow`, or red-green contrast colormaps used
-- [ ] Output path is inside `FIG_DIR`
+- 标准模板：`scripts/templates/*.py`
+- 核心绘图库：`scripts/rk_plotter_core.py`
+- 渲染入口：`scripts/render_template.py`
+- 原始随机数据脚本：`assets/original-scripts/`
+- 历史 PNG/PDF 示例图：`assets/previews/`
