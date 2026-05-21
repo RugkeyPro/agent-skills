@@ -111,6 +111,10 @@ plt.close()
 
 LLC (Lat-Lon-Cap) grids require a special workflow because the native grid has topology discontinuities that make direct 2D plotting wrong.
 
+For production LLC output-to-lat-lon NetCDF conversion, especially `pickup_ptracers.*`, also read
+`llc-latlon-netcdf.md`. It captures the fragile failure mode where raw compact files are manually
+reshaped into face arrays and produce crossed-block artifacts.
+
 **Complete pipeline (5 steps):**
 
 ### Step 1 — Read LLC data with xmitgcm
@@ -241,9 +245,10 @@ ds_grid = open_mdsdataset('./grid', grid_dir='./grid',
 XC = ds_grid['XC'].values.ravel()
 YC = ds_grid['YC'].values.ravel()
 
-# The LLC compact format stacks faces differently — use xmitgcm to read
-# correctly rather than manually reshaping the 1170×90 array.
-# → Prefer using xmitgcm with geometry='llc' for all LLC data reads.
+# The LLC compact format includes face rotations/topology. Do not treat
+# 1170×90 as a simple 13×90×90 stack for MDS output.
+# → Prefer xmitgcm with geometry='llc'. For forcing binaries, use ECCO helper
+# functions such as ecco_v4_py.llc_compact_to_tiles / llc_tiles_to_compact.
 ```
 
 ---

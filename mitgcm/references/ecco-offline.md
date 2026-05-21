@@ -25,10 +25,14 @@ When written to `.bin` files, the 13 LLC faces are packed into a **1170 × 90** 
 1170 = 13 × 90
 ```
 
-The packing is **not** a simple stack of 13 faces in order. The northern hemisphere faces are rotated and interleaved with the southern tiles to produce the compact layout. This is why:
+The packing is **not safely decoded** by treating the binary as a plain stack of
+13 independent 90×90 faces. Some faces require LLC-specific orientation and topology
+handling. This is why:
 
 - **Never** try to manually reshape a `1170×90` array to interpret individual faces
 - **Always** use `xmitgcm` with `geometry='llc'` to correctly unpack the topology
+- For raw forcing binaries that are not MDS output, use ECCO helpers such as
+  `ecco_v4_py.llc_compact_to_tiles` and `ecco_v4_py.llc_tiles_to_compact`
 
 ```python
 from xmitgcm import open_mdsdataset
@@ -115,7 +119,8 @@ data_on_llc.astype('>f4').ravel().tofile('wind_stress_llc90.bin')
 
 ### LLC90 → Regular lat/lon (e.g., for visualization)
 
-See `postprocess.md` §LLC visualization pipeline for the full 5-step workflow.
+See `postprocess.md` §LLC visualization pipeline for visualization. For NetCDF
+conversion of `pickup_ptracers.*` and other MDS output, see `llc-latlon-netcdf.md`.
 
 ---
 
