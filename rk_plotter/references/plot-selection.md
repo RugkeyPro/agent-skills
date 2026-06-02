@@ -1,80 +1,31 @@
-# Plot Selection Guide — rk_plotter
+# Plot Selection
 
-Choose the figure from the scientific question, not from habit.
+按科学问题选模板，不按图形外观硬套。优先使用 `scripts/select_template.py`，再核对 `template-catalog.md`。
 
-## Start with the Question Type
+| 科学问题 | 数据特征标签 | 首选模板 | 备选模板 |
+|---|---|---|---|
+| 空间连续强度、风险或暴露 | `spatial,lon_lat_grid,continuous_field` | `hotspot_map` | `log_scale_raster_map`, `global_raster_vessel_fraction` |
+| 空间值跨数量级 | `spatial,lon_lat_grid,continuous_field,log_scale` | `log_scale_raster_map` | `raster_quiver_log_colorbar` |
+| 栅格场叠加等值线 | `spatial,lon_lat_grid,continuous_field,contour` | `raster_contour_map` | `hotspot_map` |
+| 国家或行政区比较 | `spatial,choropleth,country,regional` | `country_choropleth_map` | `choropleth_proportional_symbol_map` |
+| 点/区域同时表达两个空间指标 | `spatial,choropleth,proportional_symbol,two_metrics` | `choropleth_proportional_symbol_map` | `country_choropleth_map` |
+| 组间分布比较 | `distribution,grouped_samples,category_comparison` | `grouped_violin_boxplot` | `boxen_plot`, `model_performance_boxplot` |
+| 一维不确定性分布 | `distribution,one_dimensional,uncertainty` | `histogram_kde` | `histogram_ecdf`, `overlapping_kde` |
+| 二维联合分布 | `distribution,paired_samples,joint_density` | `joint_kde` | `density_colored_scatter` |
+| 预测/观测诊断 | `prediction,observed,predicted,one_to_one` | `predicted_vs_real_scatter` | `parity_plot`, `loglog_model_observation_scatter` |
+| PCA 或排序结果 | `ordination,pca,loading_vectors` | `pca_biplot` | `density_colored_scatter` |
+| 情景时间序列 | `scenario,time_series,multi_line` | `multi_scenario_timeseries` | `scenario_uncertainty_timeseries` |
+| 情景不确定性 | `scenario,time_series,uncertainty_band` | `scenario_uncertainty_timeseries` | `event_period_timeseries` |
+| 事件期高亮 | `time_series,event_period,highlight` | `event_period_timeseries` | `simulated_observed_timeseries` |
+| 组成比例 | `composition,percent,groups` | `stacked_percentage_bar` | `hundred_percent_stacked_bar_compact`, `horizontal_stacked_bar` |
+| 有正负贡献 | `composition,diverging,signed` | `diverging_stacked_bar` | `grouped_bar` |
+| 小类别需要放大 | `composition,stacked,zoom_inset` | `horizontal_stacked_bar_zoom` | `horizontal_stacked_bar` |
+| SHAP 特征效应分布 | `shap,features,effects` | `shap_summary_beeswarm` | `shap_importance_bar` |
+| 概念框架或研究设计 | `framework,conceptual,workflow` | `conceptual_coupling_framework` | `study_regions_task_inputs` |
 
-| Scientific question | Recommended plots | Avoid when possible |
-|---------------------|------------------|---------------------|
-| Are groups different? | boxplot, violin, raincloud, point-range | bar-only summaries hiding distribution |
-| Is there a temporal trend? | line, ribbon, seasonal facets | disconnected bars for continuous time |
-| Are two variables related? | scatter, hexbin, density contour, regression panel | raw scatter when severe overplotting hides structure |
-| What is the composition of a whole? | stacked bar, normalized stacked bar, area chart | pie charts for many groups |
-| What is the distribution shape? | histogram, KDE, ECDF, ridgeline | bar charts of binned values without labeling |
-| What is the spatial pattern? | raster map, choropleth, station map, contours | 3D surfaces unless analytically necessary |
-| What are model coefficients/effects? | coefficient plot, marginal effect plot, forest plot | tables only when comparison is visual |
-| How do many variables covary? | heatmap, clustered heatmap, pair plot | giant unreadable scatter matrices |
-
-## Fast Decision Heuristics
-
-### If you need to compare groups
-- Use **boxplot + strip/swarm** when sample sizes are moderate and raw spread matters
-- Use **violin + points** when shape matters and `n` is not tiny
-- Use **point-range** when only summary estimates and intervals should be emphasized
-- Use **stacked bar** only when the message is composition, not group mean difference
-
-### If you need to show trends
-- Use **line + confidence ribbon** for continuous time or ordered sequences
-- Use **small multiples** when many groups would otherwise crowd one axis
-- Use **rolling summaries** only if smoothing is scientifically justified and disclosed
-
-### If you need to show relationships
-- Use **scatter + fit** for moderate sample sizes
-- Use **hexbin** or **2D density** for thousands of points
-- Use **faceting** when subgroup differences matter more than pooled fit
-
-### If you need to show space/environment
-- Use **raster maps** for gridded surfaces
-- Use **choropleths** for polygon-aggregated statistics
-- Use **station maps** or **bubble maps** for point observations
-- Use **transect/depth section plots** for oceanographic or atmospheric gradients
-
-## Environmental Science-Specific Guidance
-
-Common tasks and good defaults:
-
-| Task | Good default |
-|------|--------------|
-| Pollutant concentration across sites | boxplot/violin + points |
-| Time trend of climate or water-quality index | line + uncertainty ribbon |
-| Land-use composition by watershed | stacked bar or normalized stacked bar |
-| Correlation among environmental drivers | clustered heatmap |
-| Species-environment relationship | scatter + fit / GAM smooth |
-| Spatial anomaly relative to baseline | diverging raster map |
-| Monitoring station comparison over time | faceted line plots |
-| Model coefficient comparison | coefficient plot |
-
-## When to Replace a Bar Chart
-
-Replace bars with another plot when:
-- raw observations matter
-- the distribution is skewed
-- zero is not a meaningful anchor
-- uncertainty is more important than central value
-- there are few observations and each point should be visible
-
-Better replacements:
-- boxplot
-- violin
-- strip/swarm
-- point-range
-- estimation plot
-
-## Anti-Patterns
-
-- Pie charts with many slices
-- 3D bars or 3D surfaces for 2D data
-- Dual y-axes for unrelated variables
-- Stacked area charts when exact comparisons are the goal
-- Maps with many unrelated encodings at once
-- Correlation heatmaps annotated so densely they become unreadable
+## 使用规则
+- 数据是连续栅格时，先在地图模板中选；数据是区域统计时，选 choropleth；数据是点关系时，选 scatter/model 模板。
+- 组成数据先判断目标是“比例”还是“绝对总量”：比例用 100% stacked，绝对总量随时间用 stacked bar/area。
+- 模型诊断优先保留一比一线；所有值为正且跨度大时改用 log-log 版本。
+- 需要解释模型特征时，平均重要性用 bar，逐样本效应和方向用 beeswarm。
+- 标签推荐只负责缩小候选范围；最终必须根据 `best_for`、`avoid_when` 和真实数据字段确认。

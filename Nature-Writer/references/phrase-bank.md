@@ -1,6 +1,6 @@
 # Nature 论文常用短语库
 
-按功能分类，所有短语均来源于真实 Nature 系列论文语料。
+按功能分类，所有短语均来源于真实 Nature 系列论文语料。新增了子刊专用短语、CEI 论证模型短语和五种缺口表达。
 
 ---
 
@@ -171,3 +171,169 @@
 - `These changes could have important implications for [ecosystem services/fisheries/biodiversity].`
 - `Our projections suggest that [negative/positive] effects from climate change will [intensify/persist].`
 - `The precautionary principle suggests [fishing activities / human uses] should be limited in [areas].`
+
+---
+
+## 九、Nature 正刊 "Main" 结构专用短语
+
+Nature 正刊无 IMRaD 小节标题，文章主体按逻辑推进而非章节划分。
+
+### 段落转换与过渡
+- `We begin by describing [first finding/observation], and then go on to show [subsequent result].`
+- `To determine whether [X], we [analysed/quantified/examined] [Y].`
+- `Having established [X], we next asked whether [Y].`
+- `This [result/pattern] prompted us to investigate [further aspect].`
+- `The above analyses raise the question of whether [X] also [affects/influences] [Y].`
+
+### 在 Main 中嵌入方法说明
+- `To test this, we [conducted/performed/used] [method/experiment].`
+- `We quantified [X] using [technique], which allowed [resolution/precision].`
+- `[Method] measurements were calibrated using [standard/reference material].`
+- `We accounted for [confounding factor] by [correction/normalization approach].`
+
+### 图与结果的无缝衔接
+- `Consistent with this, [figure X] shows that [result].`
+- `Across [spatial/temporal scale], we found that [result] (Fig. X).`
+- `The relationship between [A] and [B] is shown in Fig. X — [describe pattern].`
+- `Fig. X summarizes the [key result], revealing [pattern].`
+
+### 正刊特有的强结论句
+- `Our findings identify [X] as a key driver of [Y], with implications for [Z].`
+- `These results reveal an [unexpected/undescribed] mechanism for [process].`
+- `Together, our data establish that [strong claim].`
+- `These observations highlight the [critical role / central importance] of [X].`
+- `We conclude that [X] is [not only / not simply] [A] but also [B].`
+
+---
+
+## 十、Nature 子刊专用短语
+
+### Nature Climate Change（链条式因果关系）
+- `[X] cascades through [system] to affect [Y] via [Z].`
+- `[Driver] is projected to [change] by [X] under [scenario], leading to [consequence].`
+- `Our results reveal a [causal chain / cascade] linking [A] to [B] through [C].`
+- `This [change] is projected to result in [X] by [year] under [scenario].`
+- `Attribution analysis confirms that [driver] rather than [alternative] is responsible for [observed change].`
+
+### Nature Sustainability（政策-科学桥梁）
+- `Our findings highlight an urgent need for [policy action / international cooperation].`
+- `Achieving [SDG/target] will require [specific intervention].`
+- `The [X] gap between [current state] and [desired outcome] is [quantified gap].`
+- `We identify [X] actionable leverage points for [sustainability transformation].`
+- `Policymakers should prioritize [specific action] to address [challenge].`
+- `Scaling up [solution] from [local] to [global] will require [enabling condition].`
+
+### Nature Ecology & Evolution（机制深度）
+- `We find evidence for [evolutionary/ecological] mechanism underlying [pattern].`
+- `Trait-based analysis reveals that [functional trait] drives [ecological response].`
+- `Phylogenetic comparative analysis shows that [evolutionary relationship] predicts [ecological outcome].`
+- `Our results demonstrate that [process] is mediated by [mechanism].`
+- `[Species] exhibit [trait] as an adaptive response to [selective pressure].`
+
+### Nature Geoscience（突破性证据）
+- `We present observational evidence that [key finding].`
+- `[Satellite/field] observations reveal that [unexpected pattern].`
+- `Our analysis resolves a long-standing debate about [controversial topic].`
+- `Contrary to previous assumptions, we find that [counterintuitive result].`
+- `This [process/phenomenon] has been [overlooked/underappreciated] in previous assessments.`
+
+---
+
+## 十一、CEI 论证模型短语（所有子刊通用）
+
+### Claim（主张句）
+- `Our results demonstrate that [claim].`
+- `We show that [claim].`
+- `These findings indicate that [claim].`
+- `We conclude that [claim].`
+- `The data reveal that [claim].`
+
+### Evidence（证据句）
+- `Specifically, [quantitative result] ([statistical support], Fig. X).`
+- `For example, [specific data point] — [X]% [higher/lower] than [baseline].`
+- `This is supported by [secondary analysis], which shows [corroborating result].`
+- `Across [all/sites/species], we observed [consistent pattern] (range: [min]–[max]).`
+- `Model comparison confirms this: [model A] outperforms [model B] by [metric].`
+- `Notably, this pattern held even when controlling for [confounding variable] ([test], p = [value]).`
+
+### Interpretation（解释句）
+- `This is consistent with [mechanism/theory/hypothesis].`
+- `One explanation is that [mechanism].`
+- `This likely reflects [underlying process].`
+- `These results can be understood in the context of [broader framework].`
+- `We interpret this as evidence for [mechanism].`
+- `This finding suggests that [broader implication] may be more [complex/nuanced] than previously thought.`
+
+### CEI 套用示例（完整段落）
+> `Our analysis reveals that [X] is the primary driver of [Y] (Claim). [X] accounts for [X%] of the variance in [Y], compared to only [Y%] for [alternative] ([statistical test], p < 0.001, Fig. X) (Evidence). This finding is consistent with [mechanism], whereby [X] influences [Y] through [pathway] (Interpretation).`
+
+---
+
+## 十二、五种研究缺口表达（Introduction P3）
+
+### 类型 1：知识缺口（Knowledge Gap）
+- `Despite decades of research, [key mechanistic understanding] remains elusive.`
+- `Little is known about [process] at [relevant scale].`
+- `[A] has been extensively studied, yet [B] remains largely unexplored.`
+
+### 类型 2：方法缺口（Methodological Gap）
+- `Existing methods for measuring [X] are limited to [laboratory/controlled conditions].`
+- `Current approaches [cannot distinguish / fail to capture] [critical aspect].`
+- `A major challenge is the lack of [method/tool] capable of [requirement].`
+
+### 类型 3：数据缺口（Data Gap）
+- `[X] monitoring data are available for only ~[N] sites globally — insufficient for [assessment].`
+- `Observational records of [X] are sparse in [region/time period].`
+- `The scarcity of [long-term/high-resolution] measurements precludes [analysis].`
+
+### 类型 4：尺度缺口（Scale Gap）
+- `Most studies have focused on [local/regional] scales; a [global/systematic] assessment is lacking.`
+- `Understanding at [larger scale] is critical because [process] operates across [boundaries].`
+- `The extent to which [local finding] applies at [global scale] remains unknown.`
+
+### 类型 5：悖论/争议缺口（Paradox/Controversy Gap）
+- `Whether [X] [enhances/suppresses] [Y] remains controversial.`
+- `Two conflicting hypotheses exist: [H1] versus [H2].`
+- `This [apparent paradox / unresolved debate] highlights the need for [new approach/data].`
+- `Despite general agreement on [broad claim], the mechanisms remain hotly debated.`
+
+---
+
+## 十三、局限性表达的进阶用法
+
+### 承认局限但不削弱贡献
+- `Several limitations apply to this work; nevertheless, our results provide [key contribution].`
+- `Our estimates are likely [conservative] because [reason], meaning the true [impact/rate] may be even [larger/smaller].`
+- `While [limitation] could affect the absolute [values], our relative comparisons across [regions/scenarios] remain robust.`
+- `The [coarse resolution/simplification] may introduce [uncertainty], but our sensitivity analysis shows that the main conclusions are insensitive to this assumption.`
+
+### 未考虑的变量
+- `[X] was not explicitly accounted for in our model due to [lack of data/unavailability].`
+- `Other factors, such as [variable], could also influence [outcome] and warrant future investigation.`
+- `Our analysis captures [aspect A] but does not consider [aspect B], which may modify the response.`
+
+### 未来方向
+- `Future work should incorporate [feature] to refine [estimate/understanding].`
+- `Higher [spatial/temporal] resolution data are needed to [improve/resolve] [aspect].`
+- `Combining our approach with [complementary method] would enable [additional capability].`
+
+---
+
+## 十四、来自 Nature 正刊论文的真实表达
+
+以下短语直接从 Nature 正刊论文中提取，展示了顶刊特有的语言风格。
+
+1. **农药归趋研究 (Nature, 2024)** — 定量总结句
+   > `Of the total applied pesticides, [X%] is degraded, [Y%] remains as residue, and [Z%] reaches the ocean.`
+
+2. **河流塑料输运 (Nature Communications)** — 空间分布句
+   > `The top [X] rivers, mostly located in [region], account for [X%] of the global total.`
+
+3. **海滩侵蚀 (Nature Communications)** — 综合分析句
+   > `Our analysis shows that [X%] of the world's beaches are persistently eroding, with human interventions dominating natural variability in [X%] of the global sandy shoreline.`
+
+4. **浮游动物群落转变 (Nature Climate Change)** — 因果链句
+   > `By [specific mechanism], the [observed shift] partially offsets [negative effect]; however, future communities experience reduced [ecosystem function] as [driver] intensifies.`
+
+5. **全球塑料废物排放 (Nature)** — 估算结果句
+   > `We estimate that approximately [X] Mt of plastic waste enters the ocean annually from [source], with [region] being the dominant contributor.`

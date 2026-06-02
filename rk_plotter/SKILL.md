@@ -1,278 +1,120 @@
 ---
 name: rk_plotter
-description: "Scientific plotting skill for marine ecology figures. Use when: creating matplotlib figures, plotting species distribution maps, time series, boxplots, heatmaps, SEM path diagrams, cartopy geographic maps, or any publication-quality scientific plot following GCB journal style. Triggers on: matplotlib, cartopy, seaborn, scientific figure, publication plot, species map, MHW boxplot, time series trend, correlation heatmap, SEM diagram, raster map, coexistence map, divergence map, centroid shift."
-argument-hint: "Describe the plot type, data source, and output figure name"
+description: "通用科研绘图 skill。用于根据数据特征和科学问题选择、复用、改写和渲染 publication-quality matplotlib 图形；内置 45 个带标签的科研绘图模板，提供强大的包级程序化调用 API，支持模板自动路由、智能字段映射、高像素导出和 Trace 质量一致性审计。"
 ---
 
-# rk_plotter — Marine Ecology Scientific Plotting Skill
+# rk_plotter 通用科研绘图 (程序化 API 包版本)
 
-## When to Use
-- Creating any new `plot_*.py` script in this project
-- Generating matplotlib publication figures (maps, time series, boxplots, heatmaps, SEM diagrams)
-- Asking how to style axes, save figures, or annotate statistics in this codebase
-- Debugging figure layout or color conventions
-
-## Core Rules (Non-Negotiable)
-
-1. **Always** `import matplotlib; matplotlib.use('Agg')` BEFORE any other matplotlib import
-2. **Always** `from plot_config import FIG_DIR, SPECIES_COLORS, SPECIES_ORDER, get_base_filename` and apply rcParams via that module (never re-define globally)
-3. **Always** end every script with `plt.tight_layout()` → `fig.savefig(...)` → `plt.close(fig)`
-4. **Always** save two formats: `.svg` + `.png` (600 dpi, transparent); add `.pdf` for main figures
-5. **Never** use red-green color contrast, `jet`, or `rainbow` colormaps
-6. **Always** set `matplotlib.rcParams['svg.fonttype'] = 'none'` so SVG files contain editable `<text>` elements rather than outlined paths — required for font editing in Adobe Illustrator
-7. **Always** export each subplot as a **separate single-panel figure** (independent PNG + SVG); never rely solely on a combined multi-panel save
+`rk_plotter` 已经重构为结构化的 Python 包，为大语言模型 (LLMs) 提供了一套极度稳定、参数化和防局部乱改的程序化科学可视化流水线。
 
 ---
 
-## Procedure
+## 核心程序化流水线 (Programmatic API Workflow)
 
-### Step 1 — File Setup
+在处理用户的绘图请求时，**强烈推荐** 采用以下程序化逻辑来构建最终的 Python 绘图脚本。这种模式能够极大程度降低模型临场判断的不稳定性，并防止局部乱改导致的渲染崩溃：
 
 ```python
-import matplotlib
-matplotlib.use('Agg')           # MUST be first
-matplotlib.rcParams['svg.fonttype'] = 'none'   # keep text as <text> in SVG, editable in Illustrator
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import os
+import sys
 from pathlib import Path
-from plot_config import FIG_DIR, SPECIES_COLORS, SPECIES_ORDER, get_base_filename
-```
+import pandas as pd
 
-Add optional imports only when needed:
-- Maps: `import cartopy.crs as ccrs; import cartopy.feature as cfeature`
-- Seaborn: `import seaborn as sns` (trends, boxplots, heatmaps)
-- Raster: `import rasterio`
-- Stats: `from scipy import stats`
-- Smooth: `from scipy.ndimage import gaussian_filter`
-- Custom SEM shapes: `import matplotlib.patches as mpatches; import matplotlib.path as mpath`
+# 1. 动态添加 rk_plotter 包路径 (确保其能被正确 import)
+skill_root = r"c:\Users\Lenovo\Desktop\essay1\.agents\skills\rk_plotter"
+if skill_root not in sys.path:
+    sys.path.insert(0, skill_root)
 
-### Step 2 — Data Loading
+from rk_plotter import select_template, load_template, save_figure, write_trace
+from rk_plotter.quality import verify_consistency
 
-Use `pathlib` and `PROJECT_ROOT`-relative paths:
-```python
-PROJECT_ROOT = Path(__file__).resolve().parents[1]   # preferred
-data_path = PROJECT_ROOT / "output" / "subfolder" / "file.csv"
-df = pd.read_csv(data_path).dropna()
-```
+# 2. 读取/加载用户的真实 DataFrame 数据
+df = pd.read_csv("user_dataset.csv")  # 或者是用户提供的其他数据加载逻辑
 
-For rasters (GeoTIFF):
-```python
-import rasterio
-with rasterio.open(tif_path) as src:
-    arr = src.read(1).astype(np.float32)
-    arr[arr == src.nodata] = np.nan
-```
+# 3. 程序化路由选择模板 (输入请求文本、列名与数据形态)
+match = select_template(
+    user_request="我想要一张模型预测值和实测值对比的散点图，带1比1线",
+    columns=list(df.columns),
+    data_shape=df.shape
+)
+print(f"自动路由选择的最佳模板为: {match.template_id} (匹配分: {match.score})")
 
-For batch files:
-```python
-import glob
-files = glob.glob(str(PROJECT_ROOT / "validation" / "*.csv"))
-```
+# 4. 加载特定模板实例
+template = load_template(match.template_id)
 
-Use `plot_data_helpers` functions when loading species spatial data:
-- `load_annual_map(species, year, scope)` → `(array, extent)`
-- `load_period_mean_map(species, years, scope)` → mean raster
-- `compute_annual_or10_area_change(species, threshold, scope)` → area time series
+# 5. 自动推断并匹配 DataFrame 中的字段映射关系 (如 real->'Observed', predicted->'Predicted')
+field_mapping = template.infer_fields(df)
+print(f"智能匹配的字段关系为: {field_mapping}")
 
-### Step 3 — Figure Creation
-
-Choose layout pattern:
-
-| Plot type | Code pattern |
-|-----------|-------------|
-| Single panel | `fig, ax = plt.subplots(figsize=(6, 4))` |
-| 1×N stats panels | `fig, axes = plt.subplots(1, N, figsize=(4*N, 4), sharey=False)` |
-| Map with ratio | `gs = GridSpec(1, N, width_ratios=[...]); ax = fig.add_subplot(gs[i], projection=proj)` |
-| SEM diagram | `fig, ax = plt.subplots(figsize=(6, 7))` |
-
-**GCB column width targets**: single-column 88 mm (3.46"), double-column 183 mm (7.2")
-
-### Step 4 — Axis Styling
-
-rcParams from `plot_config.py` handle most defaults. Per-script overrides:
-```python
-sns.despine(ax=ax)                          # use in seaborn plots
-ax.spines[['top','right']].set_visible(False)  # manual fallback
-
-# Species italic labels
-ax.set_xticklabels(
-    [f"$\\it{{{sp}}}$" if sp != "Community" else sp for sp in SPECIES_ORDER],
-    rotation=30, ha='right'
+# 6. 调用模板执行绘图 (传入 DataFrame、字段绑定字典以及自定义期刊配置)
+fig = template.plot(
+    df=df,
+    field_mapping=field_mapping,
+    config={
+        "x_label": "Observed COD Removal (%)",  # 覆盖坐标轴标签
+        "y_label": "Predicted COD Removal (%)",
+        "title": "COD Removal Validation Model (R2/RMSE/MAE)"  # 覆盖标题
+    }
 )
 
-# Rotated region labels
-ax.set_xticklabels(ax.get_xticklabels(), rotation=30, ha='right')
+# 7. 保存高分辨率矢量和栅格图片 (PNG 600 DPI, PDF, SVG 文本可编辑)
+paths = save_figure(fig, output_dir="outputs", basename="model_validation_plot")
+
+# 8. 写入执行 Trace 审计日志
+trace_path = write_trace(
+    output_dir="outputs",
+    template_id=match.template_id,
+    field_mapping=field_mapping,
+    paths=paths
+)
+
+# 9. 执行 Trace 一致性自检 (检查文件尺寸与生成状态)
+audit = verify_consistency(trace_path)
+print(f"质量一致性检查通过: {audit['all_passed']}")
 ```
-
-**Panel labels** (auto-generate a/b/c/d):
-```python
-for i, (ax, title) in enumerate(zip(axes, titles)):
-    ax.set_title(f'({chr(97+i)}) {title}', loc='left', fontweight='bold')
-```
-
-### Step 5 — Statistical Annotations
-
-See [stat-annotations reference](./references/stat-annotations.md) for full patterns.
-
-**Significance stars** (universal mapping):
-```python
-def sig_label(p):
-    if p < 0.001: return '***'
-    if p < 0.01:  return '**'
-    if p < 0.05:  return '*'
-    if p < 0.1:   return '.'
-    return 'ns'
-```
-
-**Bracket between two bars/boxes**:
-```python
-ax.plot([x1, x1, x2, x2], [y, y+h, y+h, y], lw=1, c='k')
-ax.text((x1+x2)*0.5, y+h*1.02, sig_label(p), ha='center', va='bottom', fontweight='bold')
-```
-
-**Regression annotation box** (time series):
-```python
-ax.text(0.05, 0.05, f"Slope: {slope:+.2f}%/yr\nP < 0.001",
-        transform=ax.transAxes, fontsize=8.5, fontweight='bold',
-        bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', pad=2))
-```
-
-**95% CI shaded band**:
-```python
-ax.fill_between(x, y_reg - conf, y_reg + conf, color=color, alpha=0.12)
-```
-
-### Step 6 — Colors
-
-See [color-palettes reference](./references/color-palettes.md) for full palette tables.
-
-Quick reference:
-```python
-from plot_config import SPECIES_COLORS   # Acropora red, Lobophora green, Scarus blue, Cephalopholis purple
-
-REGION_COLORS = {
-    "Global":         "#2C3E50",
-    "Caribbean":      "#E74C3C",
-    "GreatBarrierReef": "#27AE60",
-    "SoutheastAsia":  "#8E44AD",
-}
-MHW_COLORS = {"low": "#3498DB", "high": "#E74C3C"}
-SSP_COLORS = {"SSP245_lo": "#90CAF9", "SSP245_hi": "#1565C0",
-              "SSP585_lo": "#EF9A9A", "SSP585_hi": "#B71C1C"}
-```
-
-**Colormaps**:
-- Diverging difference maps → `RdBu_r` + `TwoSlopeNorm` or symmetric `vmin/vmax`
-- Species richness / coexistence → `RdYlBu_r` (5-level discrete)
-- Log-scale intensity → `magma_r` + `LogNorm`
-- Sequential data → `viridis`, `cividis`, or `mako`
-
-### Step 7 — Figure Saving
-
-```python
-base = get_base_filename(__file__)    # derives name from script filename
-
-out_svg = FIG_DIR / f"{base}.svg"
-out_png = FIG_DIR / f"{base}.png"
-out_pdf = FIG_DIR / f"{base}.pdf"    # optional, for main figures
-
-plt.tight_layout()
-fig.savefig(out_svg, transparent=True)
-fig.savefig(out_png, dpi=600, transparent=True, bbox_inches='tight')
-fig.savefig(out_pdf, bbox_inches='tight')  # if needed
-plt.close(fig)
-print(f"Saved {out_png}")
-```
-
-For **explicit** naming (skip `get_base_filename`):
-```python
-fig.savefig(FIG_DIR / "fig4a_mrq_map.svg", transparent=True)
-fig.savefig(FIG_DIR / "fig4a_mrq_map.png", dpi=600, transparent=True, bbox_inches='tight')
-plt.close(fig)
-```
-
-### Step 7b — Per-Panel Export (REQUIRED)
-
-Every subplot **must** also be saved as a standalone figure. Wrap each panel's drawing logic
-in a dedicated function, then call `save_panel` / `save_map_panel` once per panel.
-
-**Standard axes (non-cartopy)**:
-```python
-def save_panel(draw_fn, panel_label: str, base: str, fig_kw: dict | None = None):
-    """Create a fresh single-panel figure, run draw_fn(ax), and save SVG + PNG."""
-    fig_kw = fig_kw or {"figsize": (3.46, 3)}   # default: single GCB column width
-    fig, ax = plt.subplots(**fig_kw)
-    draw_fn(ax)
-    plt.tight_layout()
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.svg", transparent=True)
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.png",
-                dpi=600, transparent=True, bbox_inches='tight')
-    plt.close(fig)
-    print(f"Saved panel {panel_label}")
-
-# Usage:
-save_panel(lambda ax: draw_time_series(ax, species="Acropora"), "a", base)
-save_panel(lambda ax: draw_time_series(ax, species="Scarus"),   "b", base)
-```
-
-**Cartopy GeoAxes** (projection required):
-```python
-import cartopy.crs as ccrs
-
-def save_map_panel(draw_fn, panel_label: str, base: str,
-                  projection=ccrs.PlateCarree(), figsize=(4, 3)):
-    fig = plt.figure(figsize=figsize)
-    ax  = fig.add_subplot(1, 1, 1, projection=projection)
-    draw_fn(ax)
-    plt.tight_layout()
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.svg", transparent=True)
-    fig.savefig(FIG_DIR / f"{base}_{panel_label}.png",
-                dpi=600, transparent=True, bbox_inches='tight')
-    plt.close(fig)
-    print(f"Saved map panel {panel_label}")
-
-# Usage:
-save_map_panel(lambda ax: draw_global_map(ax),   "a", base, figsize=(7, 4))
-save_map_panel(lambda ax: draw_caribbean(ax),    "b", base, figsize=(4, 3))
-```
-
-> **Why separate panels?**  
-> Adobe Illustrator imports each SVG as a self-contained artboard.  
-> A combined multi-panel figure makes individual panel edits difficult
-> and may break layer/group structure. Per-panel files give full editorial control.
 
 ---
 
-## Plot-Type Quick References
+## 核心 API 说明
 
-| Plot type | Key imports | Reference script |
-|-----------|------------|-----------------|
-| Global/regional raster map | `cartopy`, `rasterio`, `TwoSlopeNorm` | `plot_fig4a_mrq_map.py` |
-| Multi-species time series | `scipy.stats`, `fill_between` | `plot_fig4b_epop_trends.py`, `plot_area_time_series.py` |
-| MHW grouped boxplots | `seaborn`, `sig brackets` | `plot_fig4c_mhw_boxplots.py` |
-| Correlation heatmap | `seaborn`, `annotate cells` | `plot_fig4d_correlation_heatmap.py` |
-| Scatter validation facets | `sns.FacetGrid`, OLS | `plot_fig6d.py` |
-| SEM path diagram | `FancyArrowPatch`, `mpath` | `plot_sem_global_path.py` |
-| SEM bar/synergy | `bar + yerr=1.96*sd` | `plot_sem_synergy_bars.py` |
-| Coexistence raster map | `RdYlBu_r` discrete, `cartopy` | `plot_global_coexistence_map.py` |
-| Centroid shift map | `GridSpec` width_ratios, arrows | `plot_centroid_shift_maps.py` |
-| Spatial divergence map | `RdBu_r`, `TwoSlopeNorm` | `plot_spatial_divergence_maps.py` |
+### 1. `select_template(user_request, columns, data_shape)`
+- **功能**：根据用户自然语言或 tags 描述，结合输入数据的列名和形态，计算最相似的模板并返回。
+- **返回**：`TemplateMatch` 对象（包含 `template_id`，`score`，`matched_tags` 属性）。
+
+### 2. `load_template(template_id)`
+- **功能**：从模板库中加载模板实例。
+- **返回**：`Template` 类实例。
+
+### 3. `template.infer_fields(df)`
+- **功能**：采用内置的**语义匹配规则**，自动识别 DataFrame 的列名（支持多国语言及常用简称，例如 `obs`/`real` 对应 `observed`，`pred`/`sim` 对应 `predicted`）。若语义匹配失败则降级为位置匹配。
+- **返回**：`dict[str, str]` 字段映射字典。
+
+### 4. `template.plot(df, field_mapping, config)`
+- **功能**：动态载入对应的制图模板，自动将 DataFrame 列绑定到 Matplotlib / Seaborn 对应参数中，并覆盖自定义 config 属性，输出期刊级图表。
+- **返回**：`matplotlib.figure.Figure` 对象。
+
+### 5. `save_figure(fig, output_dir, basename, formats=("png", "pdf", "svg"), dpi=600)`
+- **功能**：统一的科学制图高分辨率保存。自动开启透明背景，去除多余白边（`bbox_inches="tight"`），确保 SVG 字体保持矢量可编辑性，自动在保存后关闭 figure 释放内存。
+
+### 6. `write_trace(output_dir, template_id, field_mapping, paths)` 和 `verify_consistency(trace_path)`
+- **功能**：审计图表输出品质。检查生成的文件大小是否为零，保障质量稳定性。
 
 ---
 
-## Checklist Before Finishing
+## 图类型快速检索 (Visual Tags Catalog)
 
-- [ ] `matplotlib.use('Agg')` is the FIRST matplotlib call
-- [ ] `matplotlib.rcParams['svg.fonttype'] = 'none'` set immediately after `matplotlib.use('Agg')` — ensures SVG text is editable in Adobe Illustrator
-- [ ] `from plot_config import ...` brings in rcParams automatically
-- [ ] All font sizes use rcParams defaults (no explicit fontsize overrides unless deliberately deviating)
-- [ ] Top and right spines are removed
-- [ ] Species names are italicized (except "Community")
-- [ ] Files saved as SVG + PNG (600 dpi, transparent)
-- [ ] **Each subplot exported as a separate standalone figure** using `save_panel` / `save_map_panel` — not only as part of a combined layout
-- [ ] `plt.close(fig)` is called after every panel save
-- [ ] No `jet`, `rainbow`, or red-green contrast colormaps used
-- [ ] Output path is inside `FIG_DIR`
+若需要使用终端 CLI 或特定 tags，可以参考下表：
+
+| 用户需求场景 | 匹配标签 | 推荐模板 ID |
+|---|---|---|
+| 经纬度网格、热点、空间暴露 | `spatial,lon_lat_grid,continuous_field` | `hotspot_map`, `log_scale_raster_map`, `raster_contour_map` |
+| 国家/行政区指标分布 | `spatial,choropleth,country` | `country_choropleth_map` |
+| 多组数值分布 (letter-value) | `distribution,grouped_samples,category_comparison` | `boxen_plot` |
+| 预测值与实测值诊断 (回归/ML) | `prediction,observed,predicted,one_to_one` | `predicted_vs_real_scatter` |
+| 观测点密度散点 (scipy-KDE) | `scatter,dense_points,density` | `density_colored_scatter` |
+| 未来情景多曲线时间序列 | `scenario,time_series,multi_line` | `multi_scenario_timeseries` |
+| 组成比例、百分比堆叠柱状图 | `composition,percent,groups` | `stacked_percentage_bar`, `horizontal_stacked_bar` |
+| 特征重要性及 SHAP 分析 | `shap,features,effects` / `shap,features,importance` | `shap_summary_beeswarm`, `shap_importance_bar` |
+
+---
+
+## 向后兼容性说明 (Backward Compatibility)
+本 Skill 仍完整保留了旧版命令行和 shims 接口。任何现有的调用 `python scripts/select_template.py` 或从 `scripts.templates.<template_id>` 导入的老代码均能在零修改的情况下继续流畅运行，因为它们已在底层重定向并共享了全新的 `rk_plotter` 顶级程序包服务。
