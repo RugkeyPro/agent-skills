@@ -25,6 +25,21 @@ STYLE_PROFILE = {
     'plot_primitives': ('scatter', 'density_color', 'one_to_one_line')
 }
 
+# Fields mapping and semantic keyword rules for dynamic column binding
+REQUIRED_FIELDS = ("x", "y")
+FIELD_ALIASES = {
+    "x": ["x", "lon", "longitude", "observed"],
+    "y": ["y", "lat", "latitude", "predicted"]
+}
+
+def adapt_dataframe(df: pd.DataFrame, field_mapping: dict[str, str]) -> pd.DataFrame:
+    """Converts user DataFrame using field mapping into standardized data columns."""
+    x_col = field_mapping.get("x")
+    y_col = field_mapping.get("y")
+    if x_col is None or y_col is None:
+        raise ValueError(f"Field mapping must contain 'x' and 'y' for {TEMPLATE_ID}")
+    return df[[x_col, y_col]]
+
 STYLE_RC = {
     "font.family": "sans-serif",
     "font.sans-serif": ["Arial", "DejaVu Sans", "Helvetica", "Microsoft YaHei"],

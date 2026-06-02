@@ -24,6 +24,21 @@ STYLE_PROFILE = {
     'plot_primitives': ('quantile_bands', 'scatter')
 }
 
+# Fields mapping and semantic keyword rules for dynamic column binding
+REQUIRED_FIELDS = ("groups", "values")
+FIELD_ALIASES = {
+    "groups": ["group", "class", "label", "category", "cat", "type", "treatment", "groups"],
+    "values": ["value", "val", "index", "metric", "score", "rate", "emission"]
+}
+
+def adapt_dataframe(df: pd.DataFrame, field_mapping: dict[str, str]) -> pd.DataFrame:
+    """Converts user DataFrame using field mapping into standardized data columns."""
+    grp_col = field_mapping.get("groups")
+    val_col = field_mapping.get("values")
+    if grp_col is None or val_col is None:
+        raise ValueError(f"Field mapping must contain 'groups' and 'values' for {TEMPLATE_ID}")
+    return df[[grp_col, val_col]]
+
 # Scientific Publication Styling constants
 STYLE_RC = {
     "font.family": "sans-serif",

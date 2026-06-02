@@ -23,6 +23,21 @@ STYLE_PROFILE = {
     'plot_primitives': ('scatter', 'line', 'text')
 }
 
+# Fields mapping and semantic keyword rules for dynamic column binding
+REQUIRED_FIELDS = ("real", "predicted")
+FIELD_ALIASES = {
+    "real": ["observed", "obs", "real", "measured", "true", "actual", "y_true", "measured_values"],
+    "predicted": ["predicted", "pred", "simulated", "sim", "model", "forecast", "y_pred", "predicted_values"]
+}
+
+def adapt_dataframe(df: pd.DataFrame, field_mapping: dict[str, str]) -> pd.DataFrame:
+    """Converts user DataFrame using field mapping into standardized data columns."""
+    real_col = field_mapping.get("real")
+    pred_col = field_mapping.get("predicted")
+    if real_col is None or pred_col is None:
+        raise ValueError(f"Field mapping must contain 'real' and 'predicted' for {TEMPLATE_ID}")
+    return df[[real_col, pred_col]]
+
 STYLE_RC = {
     "font.family": "sans-serif",
     "font.sans-serif": ["Arial", "DejaVu Sans", "Helvetica", "Microsoft YaHei"],

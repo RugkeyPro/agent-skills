@@ -28,6 +28,21 @@ STYLE_PROFILE = {
     'plot_primitives': ('choropleth',)
 }
 
+# Fields mapping and semantic keyword rules for dynamic column binding
+REQUIRED_FIELDS = ("region", "value")
+FIELD_ALIASES = {
+    "region": ["country", "iso", "region", "nation", "state", "province", "geo"],
+    "value": ["value", "val", "index", "metric", "score", "rate", "emission"]
+}
+
+def adapt_dataframe(df: pd.DataFrame, field_mapping: dict[str, str]) -> pd.DataFrame:
+    """Converts user DataFrame using field mapping into standardized data columns."""
+    reg_col = field_mapping.get("region")
+    val_col = field_mapping.get("value")
+    if reg_col is None or val_col is None:
+        raise ValueError(f"Field mapping must contain 'region' and 'value' for {TEMPLATE_ID}")
+    return df[[reg_col, val_col]]
+
 STYLE_RC = {
     "font.family": "sans-serif",
     "font.sans-serif": ["Arial", "DejaVu Sans", "Helvetica", "Microsoft YaHei"],

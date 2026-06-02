@@ -18,8 +18,9 @@ import sys
 from pathlib import Path
 import pandas as pd
 
-# 1. 动态添加 rk_plotter 包路径 (确保其能被正确 import)
-skill_root = r"c:\Users\Lenovo\Desktop\essay1\.agents\skills\rk_plotter"
+# 1. 确保 rk_plotter 可被正常导入（若作为包本地安装，可以直接 import rk_plotter；
+#    或者在脚本头部动态添加 rk_plotter 的父级目录到 sys.path 中）：
+skill_root = str(Path(__file__).resolve().parent)  # 假设 rk_plotter 包文件夹与脚本在同一目录下
 if skill_root not in sys.path:
     sys.path.insert(0, skill_root)
 
