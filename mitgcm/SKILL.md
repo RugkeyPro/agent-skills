@@ -6,9 +6,10 @@ description: "MITgcm full-workflow skill covering compilation (SIZE.h static mem
   xmitgcm post-processing, LLC grid handling, and ECCO offline state estimation.
   TRIGGER when user mentions: MITgcm, mitgcm, mitgcmuv, genmake2, SIZE.h, mdsio,
   xmitgcm, open_mdsdataset, LLC90, LLC270, LLC4320, ECCO, packages.conf, data.pkg,
-  eedata, deltaTClock, CFL stability, bathymetry .bin, Big-Endian ocean model,
-  or any MITgcm package name such as KPP, GM, ptracers, thsice, exf, gchem,
-  seaice, offline, mnc, gmredi, diagnostics."
+  eedata, deltaTClock, CFL stability, bathymetry .bin, pickup_ptracers,
+  Big-Endian ocean model, LLC to lat-lon NetCDF conversion, or any MITgcm package
+  name such as KPP, GM, ptracers, thsice, exf, gchem, seaice, offline, mnc,
+  gmredi, diagnostics."
 ---
 
 # MITgcm Skill
@@ -42,6 +43,7 @@ Load the relevant reference file(s) when a topic is raised. Multiple files may b
 | Parallel computing | `references/parallel-computing.md` | `mpirun`, `eedata`, `nTx`, `nTy`, `OMP_NUM_THREADS`, OpenMP, MPI |
 | Post-processing & visualization | `references/postprocess.md` | `xmitgcm`, `open_mdsdataset`, `plot_`, `process_`, LLC visualization, `pyresample`, `cartopy` |
 | ECCO / LLC offline | `references/ecco-offline.md` | `LLC90`, `LLC270`, `LLC4320`, `ECCO`, `offline`, `offlineForcingPeriod`, 1170×90, compact format |
+| LLC → lat-lon NetCDF conversion | `references/llc-latlon-netcdf.md` | `pickup_ptracers`, `LLC90 to latlon`, `经纬度 nc`, `compact to NetCDF`, `xmitgcm extra_variables`, grid artifacts |
 
 ---
 
@@ -88,6 +90,13 @@ from xmitgcm import open_mdsdataset
 ds = open_mdsdataset(data_dir, grid_dir=grid_dir, iters='all')
 ```
 
+### LLC Compact → Lat-Lon NetCDF: Do Not Hand-Reshape
+For LLC90/LLC compact MDS output such as `pickup_ptracers.*`, never reshape the raw compact
+binary into `(face, j, i)` yourself, and never assume `1170×90 = 13×90×90` can be decoded by a
+plain transpose. Load with `xmitgcm(..., geometry='llc')`, flatten the decoded `XC/YC` and field
+in the same face/j/i order, then regrid on the sphere with nearest-neighbor/KDTree plus `hFacC`
+wet masks. See `references/llc-latlon-netcdf.md`.
+
 ### Conda Environment
 All Python scripts must be run inside the `mitgcm` conda environment:
 ```bash
@@ -133,6 +142,7 @@ mpirun -n {cores} --use-hwthread-cpus ./mitgcmuv
 | Model blows up at step 1 | `deltaTClock` too large (CFL > 0.8) | `compilation.md` §CFL |
 | Output files are zeros | Wrong endianness in forcing/bathymetry | `data-io.md` |
 | LLC plot has discontinuities | Used 2D lat/lon interpolation instead of 3D Cartesian | `ecco-offline.md` |
+| Lat-lon NetCDF appears as crossed blocks or scrambled tiles | Manually reshaped LLC compact pickup or regridded without decoded xmitgcm face topology | `llc-latlon-netcdf.md` |
 | `mpirun` fails with wrong process count | `nPx×nPy` in SIZE.h ≠ `-n` argument | `parallel-computing.md` |
 | New package has no effect at runtime | Forgot one of the seven gchem hook files (especially `gchem_check.F`) | `package-management.md` §Creating a New Package |
 | `COMMON` or `NAMELIST` compile error after adding a flag | Fixed-form continuation `&` pushed off column 6, or multi-variable `NAMELIST` with continuation | `package-management.md` §Fixed-form Fortran rules |
