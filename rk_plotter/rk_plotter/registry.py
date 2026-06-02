@@ -146,44 +146,189 @@ class Template:
                 data_dict.update({
                     "groups": np.array(grps),
                     "values": [df[df[grp_col] == g][val_col].values for g in grps],
-                    "ylabel": val_col
+                    "ylabel": str(val_col)
                 })
-            elif kind in {"stacked_percent", "stacked_bar_time", "horizontal_stacked", "horizontal_stacked_zoom", "stacked_percent_line"}:
+                
+            elif kind in {"stacked_percent", "stacked_bar_time", "horizontal_stacked", "horizontal_stacked_zoom", "stacked_percent_line", "diverging_bar"}:
                 grp_col = field_mapping.get("groups") or df.columns[0]
-                comps_col = [c for c in df.columns if c != grp_col]
+                other_cols = [c for c in df.columns if c != grp_col]
+                
+                # Check for Long format: grp_col, comp_col, val_col
+                if len(other_cols) == 2 and not pd.api.types.is_numeric_dtype(df[other_cols[0]]):
+                    comp_col, val_col = other_cols[0], other_cols[1]
+                    pivoted = df.pivot(index=grp_col, columns=comp_col, values=val_col)
+                    groups = pivoted.index.values
+                    components = pivoted.columns.values
+                    values = pivoted.values
+                    ylabel_str = str(val_col)
+                else:
+                    # Wide format
+                    groups = df[grp_col].unique()
+                    components = np.array(other_cols)
+                    values = df[other_cols].values
+                    ylabel_str = "Percent" if "percent" in kind else "Value"
+                    
                 data_dict.update({
-                    "groups": df[grp_col].unique(),
-                    "components": np.array(comps_col),
-                    "values": df[comps_col].values,
-                    "ylabel": "Share"
+                    "groups": groups,
+                    "components": components,
+                    "values": values,
+                    "ylabel": ylabel_str
                 })
+                
+            elif kind in {"grouped_bar", "horizontal_dual_axis", "binary_bar"}:
+                grp_col = field_mapping.get("groups") or df.columns[0]
+                other_cols = [c for c in df.columns if c != grp_col]
+                
+                if len(other_cols) == 2 and not pd.api.types.is_numeric_dtype(df[other_cols[0]]):
+                    ser_col, val_col = other_cols[0], other_cols[1]
+                    pivoted = df.pivot(index=grp_col, columns=ser_col, values=val_col)
+                    groups = pivoted.index.values
+                    series = pivoted.columns.values
+                    values = pivoted.values
+                    ylabel_str = str(val_col)
+                else:
+                    groups = df[grp_col].unique()
+                    series = np.array(other_cols)
+                    values = df[other_cols].values
+                    ylabel_str = "Value"
+                    
+                data_dict.update({
+                    "groups": groups,
+                    "series": series,
+                    "values": values,
+                    "ylabel": ylabel_str
+                })
+                
+            elif kind in {"stacked_area", "multi_line_time", "observed_simulated", "scenario_uncertainty", "event_period", "log_timeseries"}:
+                x_col = field_mapping.get("x") or field_mapping.get("time") or df.columns[0]
+                other_cols = [c for c in df.columns if c != x_col]
+                
+                if len(other_cols) == 2 and not pd.api.types.is_numeric_dtype(df[other_cols[0]]):
+                    # Long format: [Time, Scenario, Value]
+                    lbl_col, val_col = other_cols[0], other_cols[1]
+                    pivoted = df.pivot(index=x_col, columns=lbl_col, values=val_col)
+                    x_vals = pivoted.index.values
+                    labels = pivoted.columns.values
+                    series = pivoted.values.T  # shape (num_series, len_x)
+                    ylabel_str = str(val_col)
+                else:
+                    # Wide format: [Time, ScenarioA, ScenarioB]
+                    x_vals = df[x_col].values
+                    labels = np.array(other_cols)
+                    series = df[other_cols].values.T
+                    ylabel_str = "Value"
+                    
+                data_dict.update({
+                    "x": x_vals,
+                    "series": series,
+                    "labels": labels,
+                    "ylabel": ylabel_str
+                })
+                
+            elif kind in {"response_curve", "latitudinal_profile", "depth_profile"}:
+                x_col = field_mapping.get("x") or df.columns[0]
+                y_col = field_mapping.get("y") or df.columns[1]
+                data_dict.update({
+                    "x": df[x_col].values,
+                    "y": df[y_col].values,
+                    "xlabel": str(x_col),
+                    "ylabel": str(y_col)
+                })
+                
             elif kind in {"density_scatter", "pca", "loglog_scatter", "predicted_real", "parity"}:
                 x_col = field_mapping.get("real") or field_mapping.get("x") or df.columns[0]
                 y_col = field_mapping.get("predicted") or field_mapping.get("y") or df.columns[1]
                 data_dict.update({
                     "x": df[x_col].values,
                     "y": df[y_col].values,
-                    "xlabel": x_col,
-                    "ylabel": y_col
+                    "xlabel": str(x_col),
+                    "ylabel": str(y_col)
                 })
+                
             elif kind in {"country_choropleth", "choropleth_symbol"}:
                 reg_col = field_mapping.get("region") or df.columns[0]
                 val_col = field_mapping.get("value") or df.columns[1]
                 data_dict.update({
                     "countries": dict(zip(df[reg_col].astype(str), df[val_col].astype(float))),
-                    "metric": val_col
+                    "metric": str(val_col)
                 })
+                
+            elif kind in {"hist_kde", "hist_ecdf", "overlap_kde", "joint_kde"}:
+                lbl_col = field_mapping.get("labels") or [c for c in df.columns if not pd.api.types.is_numeric_dtype(df[c])][0] or df.columns[0]
+                val_col = [c for c in df.columns if c != lbl_col][0]
+                labels = df[lbl_col].unique()
+                values = [df[df[lbl_col] == l][val_col].values for l in labels]
+                data_dict.update({
+                    "values": values,
+                    "labels": np.array(labels),
+                    "xlabel": str(val_col)
+                })
+                
+            elif kind in {"shap_bar", "shap_beeswarm"}:
+                feat_col = field_mapping.get("features") or df.columns[0]
+                imp_col = field_mapping.get("importance") or df.columns[1]
+                data_dict.update({
+                    "features": df[feat_col].values,
+                    "importance": df[imp_col].values,
+                    "effects": df.select_dtypes(include=[np.number]).values
+                })
+                
+            elif kind == "radar":
+                lbl_col = df.columns[0]
+                val_col = df.columns[1]
+                data_dict.update({
+                    "labels": df[lbl_col].values,
+                    "values": df[val_col].values
+                })
+                
+            elif kind == "nested_donut":
+                data_dict.update({
+                    "outer": df.iloc[:, 0].values,
+                    "inner": df.iloc[:, 1].values if len(df.columns) > 1 else df.iloc[:, 0].values
+                })
+                
+            elif "raster" in kind or "quiver" in kind or "contour" in kind or kind in {"hotspot_map", "log_scale_raster_map", "global_raster_vessel_fraction"}:
+                lon_col = [c for c in df.columns if "lon" in str(c).lower() or "x" in str(c).lower()]
+                lon_col = lon_col[0] if lon_col else df.columns[0]
+                lat_col = [c for c in df.columns if "lat" in str(c).lower() or "y" in str(c).lower()]
+                lat_col = lat_col[0] if lat_col else df.columns[1]
+                val_col = [c for c in df.columns if c not in {lon_col, lat_col}]
+                val_col = val_col[0] if val_col else df.columns[-1]
+                
+                if len(df.columns) >= 3:
+                    try:
+                        pivoted = df.pivot(index=lat_col, columns=lon_col, values=val_col)
+                        lon_vals = pivoted.columns.values
+                        lat_vals = pivoted.index.values
+                        raster_vals = pivoted.values
+                    except Exception:
+                        lon_vals = df[lon_col].unique()
+                        lat_vals = df[lat_col].unique()
+                        raster_vals = df[val_col].values.reshape((len(lat_vals), len(lon_vals)))
+                else:
+                    lon_vals = df.columns.values
+                    lat_vals = df.index.values
+                    raster_vals = df.values
+                    
+                data_dict.update({
+                    "lon": lon_vals,
+                    "lat": lat_vals,
+                    "raster": raster_vals,
+                    "xlabel": str(lon_col),
+                    "ylabel": str(lat_col)
+                })
+                
             else:
                 # Generic fallback dictionary mapping first 2 columns
                 c1, c2 = df.columns[0], df.columns[1]
                 data_dict.update({
                     "x": df[c1].values,
                     "y": df[c2].values,
-                    "xlabel": c1,
-                    "ylabel": c2
+                    "xlabel": str(c1),
+                    "ylabel": str(c2)
                 })
         except Exception as e:
-            # If default mapping fails, pass raw DataFrame directly
+            # If mapping fails, pass raw DataFrame directly
             data_dict = df
             
         fig, ax = self.module.plot(

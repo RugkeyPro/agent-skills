@@ -82,10 +82,103 @@ def score_candidate(template_id: str, meta: dict, query_tags: set[str]) -> float
     return score
 
 
+def inspect_data_structure(
+    columns: Sequence[str] | None = None,
+    data_shape: tuple[int, ...] | None = None,
+    df: Any | None = None
+) -> dict[str, Any]:
+    """
+    Inspects columns, data shape, and types to infer semantic patterns:
+    - has_time: time-like columns (Year, Date, Time, etc.)
+    - has_country: geographic country name or ISO columns
+    - has_coordinates: coordinate column keywords (lat, lon, x, y)
+    - num_numeric: count of numeric columns
+    - num_categorical: count of string/categorical columns
+    """
+    stats = {
+        "has_time": False,
+        "has_country": False,
+        "has_coordinates": False,
+        "num_numeric": 0,
+        "num_categorical": 0,
+        "cols_count": 0,
+        "rows_count": 0
+    }
+    
+    # Check if df is a real pandas DataFrame
+    is_df = False
+    try:
+        import pandas as pd
+        if isinstance(df, pd.DataFrame):
+            is_df = True
+    except ImportError:
+        pass
+        
+    if is_df and df is not None:
+        columns = list(df.columns)
+        data_shape = df.shape
+        
+        # Analyze pandas columns directly
+        for col in columns:
+            col_lower = str(col).lower()
+            # 1. Date/Time checks
+            if any(k in col_lower for k in ["year", "date", "time", "month", "day", "timestamp", "epoch"]):
+                stats["has_time"] = True
+            elif pd.api.types.is_datetime64_any_dtype(df[col]):
+                stats["has_time"] = True
+                
+            # 2. Coordinates checks
+            if any(k == col_lower or k in col_lower for k in ["lat", "lon", "latitude", "longitude"]):
+                stats["has_coordinates"] = True
+                
+            # 3. Country checks
+            if any(k in col_lower for k in ["country", "iso", "nation", "region", "geo"]):
+                stats["has_country"] = True
+            else:
+                # Check sample values for country codes/names
+                sample_vals = df[col].dropna().head(10).astype(str).str.upper().str.strip()
+                common_isos = {"USA", "CHN", "IND", "BRA", "RUS", "CAN", "DEU", "GBR", "FRA", "JPN", "AUS"}
+                if any(val in common_isos for val in sample_vals):
+                    stats["has_country"] = True
+                    
+            # 4. Numeric vs Categorical
+            if pd.api.types.is_numeric_dtype(df[col]):
+                stats["num_numeric"] += 1
+            else:
+                stats["num_categorical"] += 1
+    else:
+        # Fallback to column-name keywords
+        if columns is not None:
+            for col in columns:
+                col_lower = str(col).lower()
+                if any(k in col_lower for k in ["year", "date", "time", "month", "day"]):
+                    stats["has_time"] = True
+                if any(k in col_lower for k in ["lat", "lon", "latitude", "longitude"]):
+                    stats["has_coordinates"] = True
+                if any(k in col_lower for k in ["country", "iso", "nation", "region", "geo"]):
+                    stats["has_country"] = True
+                    
+            # Guess types from names
+            for col in columns:
+                col_lower = str(col).lower()
+                if any(k in col_lower for k in ["id", "name", "group", "class", "label", "category", "cat", "type", "country", "region"]):
+                    stats["num_categorical"] += 1
+                else:
+                    stats["num_numeric"] += 1
+                    
+    if columns is not None:
+        stats["cols_count"] = len(columns)
+    if data_shape is not None:
+        stats["rows_count"] = data_shape[0] if len(data_shape) > 0 else 0
+        
+    return stats
+
+
 def select_template(
     user_request: str,
     columns: Sequence[str] | None = None,
-    data_shape: tuple[int, ...] | None = None
+    data_shape: tuple[int, ...] | None = None,
+    df: Any | None = None
 ) -> TemplateMatch:
     """
     Programmatically selects the optimal plotting template matching the user request
@@ -93,17 +186,63 @@ def select_template(
     """
     query_tags = set(infer_tags_from_query(user_request))
     
+    # Deeply inspect DataFrame structure and metadata
+    stats = inspect_data_structure(columns, data_shape, df)
+    
     results: list[TemplateMatch] = []
     for template_id, meta in TEMPLATES.items():
         score = score_candidate(template_id, meta, query_tags)
         
-        # Hard limits on shape/columns compatibility (custom checks)
-        # e.g., mapping templates need at least 2 columns, spatial grid needs 2D or long/lat
-        if columns is not None:
-            required_fields_count = len(meta.get("data_profile", {}).get("required_fields", ("x", "y")))
-            if len(columns) < required_fields_count:
-                # Incompatible columns size - penalize heavily
-                score -= 10.0
+        # Determine expected fields from details or style profile
+        required_fields_count = 2
+        try:
+            from template_registry import _DETAILS
+            if template_id in _DETAILS:
+                required_fields_count = len(_DETAILS[template_id][2])
+        except Exception:
+            pass
+            
+        # 1. Size match constraints (penalize if columns are insufficient)
+        if stats["cols_count"] > 0 and stats["cols_count"] < required_fields_count:
+            score -= 15.0
+            
+        # 2. Advanced structural affinity checks based on template metadata
+        kind = meta.get("kind", "")
+        category = meta.get("category", "")
+        
+        # Time Series matching
+        if "time_series" in category or "time" in kind or "timeseries" in template_id:
+            if stats["has_time"]:
+                score += 8.0  # Time series pattern match!
+            else:
+                score -= 3.0  # Penalize if time column missing
+                
+        # Spatial Grid / Raster matching
+        if "maps" in category and ("raster" in kind or "contour" in kind or "quiver" in kind or "hotspot" in template_id):
+            if stats["has_coordinates"]:
+                score += 10.0  # Perfect coordinates match!
+            if stats["num_numeric"] >= 3:
+                score += 4.0   # Matches lat, lon, raster values structure
+                
+        # Choropleth / Country matching
+        if "maps" in category and ("choropleth" in kind or "country" in kind or "choropleth" in template_id):
+            if stats["has_country"]:
+                score += 10.0  # Perfect country identification match!
+                
+        # Category Group Distributions matching
+        if "distributions" in category or kind in {"boxen", "model_boxplot", "violin_box", "faceted_boxplot"}:
+            if stats["num_categorical"] >= 1 and stats["num_numeric"] >= 1:
+                score += 6.0   # Matches category column + numeric values
+                
+        # Scatter/Regression matching
+        if "scatter" in kind or "predicted_real" in kind or "parity" in kind:
+            if stats["num_numeric"] >= 2:
+                score += 5.0   # Matches paired quantitative variables
+                
+        # SHAP / ML Explainability matching
+        if "shap" in kind or "ml_explainability" in category:
+            if any(k in user_request.lower() for k in ["shap", "feature", "importance"]):
+                score += 10.0
                 
         matched_tags = sorted(list(query_tags & {normalize_token(tag) for tag in meta.get("tags", ())}))
         results.append(TemplateMatch(template_id, score, matched_tags))
