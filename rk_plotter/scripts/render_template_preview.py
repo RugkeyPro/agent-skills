@@ -18,6 +18,7 @@ TEMPLATES_LIST = [
     "heatmap_2d",
     "raster_map",
     "choropleth_map",
+    "global_regional_sst_map",
     "shap_importance_bar",
     "multipanel_layout"
 ]

@@ -16,6 +16,7 @@ Use this table to match user requests and datasets to the appropriate scientific
 | `violin_boxplot` | Distribution | Showing probability density and IQR statistics simultaneously. | `group`, `value` | Violin plot with internal box-and-whisker overlay. |
 | `heatmap_2d` | Correlation / Grid | Displaying matrices, correlation coefficients, or grid values. | `x` (Categories), `y` (Categories), `value` | 2D color-coded grid with annotated cells and right-hand colorbar. |
 | `raster_map` | Spatial Map | Gridded spatial fields (e.g., global anomalies or exposures). | `lon`, `lat`, `raster` (2D array) | Geographic projection (Cartopy PlateCarree/Robinson), spatial grid overlay, colorbar. |
+| `global_regional_sst_map` | Spatial Map | Global or regional sea surface temperature changes. | `lon`, `lat`, `delta_sst` | PlateCarree map projection (central_longitude=180), bottom horizontal colorbar, land/coastline backdrop. |
 | `choropleth_map` | Spatial Map | Country-level or administrative regional indicators. | `region` (ISO codes), `value` | Robinson projection global country outlines colored by quantitative values. |
 | `shap_importance_bar` | ML Explainability | Ranking feature importances or summary metrics. | `feature`, `importance` | Ranked horizontal bar chart sorted in descending order of feature impact. |
 | `multipanel_layout` | Layout Frame | Combining different chart types into a single figure. | Custom per panel | GridSpec multi-panel layout canvas (e.g. 2x2 grids) with explicit panel markers (A, B, C, D). |

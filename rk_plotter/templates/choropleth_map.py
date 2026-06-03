@@ -196,7 +196,7 @@ def save_outputs(fig: plt.Figure, export: dict) -> list[Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
     paths = []
     for fmt in export["formats"]:
-        path = output_dir / f"{export["basename"]}.{fmt}"
+        path = output_dir / f"{export['basename']}.{fmt}"
         kwargs: dict = {"bbox_inches": "tight"}
         if fmt.lower() in {"png", "jpg", "jpeg", "tif", "tiff"}:
             kwargs["dpi"] = export["dpi"]

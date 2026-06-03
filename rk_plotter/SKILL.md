@@ -16,8 +16,8 @@ description: 科研绘图模板重构 skill。用于从 0 生成科研绘图脚�
    - **工作流 B (重构旧绘图代码)**: 分离旧代码的数据逻辑和绘图逻辑，保留数据处理 block，用模板 plot() block 替换原有绘图主体。
    - **工作流 C (优化已有图)**: 原图结构合理时，仅用模板的 rcParams、配色和导出规则重写样式层。
 2. **选择并阅读模板**：
-   - 检查用户数据维度，对照 [template-index.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/template-index.md) 选择最佳模板。
-   - 读取 [templates/](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/templates/) 目录下的对应 `.py` 脚本，以其代码为母版进行改写。
+   - 检查用户数据维度，对照 [template-index.md](references/template-index.md) 选择最佳模板。
+   - 读取 [templates/](templates/) 目录下的对应 `.py` 脚本，以其代码为母版进行改写。
 3. **显式数据绑定**：
    - 使用 `FIELD_MAP` 绑定实际列名，禁止直接使用列索引（如 `iloc[:, 0]`）强行猜测数据科学含义。
 4. **输出完整脚本**：
@@ -37,9 +37,9 @@ description: 科研绘图模板重构 skill。用于从 0 生成科研绘图脚�
 
 ## 📖 参考指南目录
 请务必遵循以下文档执行具体操作：
-- 🚀 **工作流规范**: [workflow.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/workflow.md)
-- 📊 **模板索引**: [template-index.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/template-index.md)
-- 🚧 **修改边界**: [edit-boundary.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/edit-boundary.md)
-- 🎨 **样式规范**: [style-contract.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/style-contract.md)
-- 🔧 **代码重构规则**: [refactor-code.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/refactor-code.md)
-- ✅ **QA 检查清单**: [qa-checklist.md](file:///c:/Users/Lenovo/Desktop/essay1/.agents/skills/rk_plotter/references/qa-checklist.md)
+- 🚀 **工作流规范**: [workflow.md](references/workflow.md)
+- 📊 **模板索引**: [template-index.md](references/template-index.md)
+- 🚧 **修改边界**: [edit-boundary.md](references/edit-boundary.md)
+- 🎨 **样式规范**: [style-contract.md](references/style-contract.md)
+- 🔧 **代码重构规则**: [refactor-code.md](references/refactor-code.md)
+- ✅ **QA 检查清单**: [qa-checklist.md](references/qa-checklist.md)
