@@ -31,6 +31,8 @@ Before completing a plotting task or delivering a script, verify every item on t
 - [ ] **Vector File Embedding**: The script sets `plt.rcParams["pdf.fonttype"] = 42` to ensure TrueType font embedding in PDFs.
 - [ ] **White Space**: `bbox_inches="tight"` is passed to `fig.savefig()` to crop out margins.
 - [ ] **Grid Lines & Spines**: Spines (`top`/`right`) are hidden. Grid lines are placed behind elements (`zorder=0`).
+- [ ] **No Text Clutter**: Custom annotations inside the plot coordinates are kept minimal (e.g. limited to significance asterisks, regression stats like slope/p-value/R², or panel labels). No long explanatory sentences or redundant data values on bars/points are present.
+- [ ] **Extension Styling**: If structural extensions were added (twin axes, extra series, error bands, reference lines, zoom insets), they are styled consistently with standard widths, colors, transparency, and markers.
 
 ---
 

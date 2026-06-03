@@ -78,9 +78,27 @@ Do not use high-saturation raw primary colors (e.g. pure red `#FF0000` or pure g
 
 ---
 
-## 5. Output Specifications
+## 5. Annotation & Text Constraints (标注与文本限制)
+
+Excessive text inside the plot region clutters the visual canvas and detracts from publication aesthetics. Strict constraints are applied to all custom text annotations added inside the plot boundaries (`ax.text` or `ax.annotate`):
+
+1. **Keep it minimal**: Internal annotations should be used only for critical scientific metadata, such as:
+   - **Significance Symbols**: e.g., `*`, `**`, `***`, or `n.s.`.
+   - **Regression / Statistical Metrics**: e.g., Slope, $R^2$, RMSE, $p$-value, sample size $N$, or simple regression equations.
+   - **Panel Indicators**: e.g., `A`, `B`, `C` (top left, bold).
+2. **No descriptive paragraphs**: Do not write long sentences, notes, or descriptive comments directly on the plot area. Move such text to the main paper text, figure caption, or axis labels/legends.
+3. **No redundant bar/point labels**: Do not overlay exact quantitative values on top of every bar in a bar chart or next to every point in a scatter plot unless explicitly requested by the user. Let the axes scales speak for themselves.
+4. **Style parameters for text boxes**: Text boxes overlaying metrics must use clean, semi-transparent boxes to avoid distracting from the data:
+   ```python
+   bbox=dict(boxstyle="round,pad=0.35", facecolor="white", edgecolor="#CCCCCC", linewidth=0.5, alpha=0.9)
+   ```
+
+---
+
+## 6. Output Specifications
 
 All plotting scripts must save outputs in three standard formats:
 1. **SVG**: For vector graphics scaling and vector editing (illustrator, Inkscape).
 2. **PDF**: For vector embedding in document editors.
 3. **PNG**: High-resolution raster preview (DPI **600** required).
+
