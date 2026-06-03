@@ -1,19 +1,30 @@
 # TEMPLATE_ID: predicted_vs_real_scatter
-# TEMPLATE_VERSION: 1.0
+# TEMPLATE_VERSION: 1.1
 # FIGURE_TYPE: prediction_diagnostic_scatter
-# LOCKED_STRUCTURE:
+#
+# CORE_VISUAL_GRAMMAR:
 # - single square scatter panel
-# - observed on x-axis
-# - predicted on y-axis
-# - 1:1 reference line
-# - fitted regression line
-# - metric textbox
+# - observed on x-axis, predicted on y-axis
+# - 1:1 diagonal reference line and linear fit regression dashed line
+# - metric textbox with R2, RMSE, MAE, N
+#
+# COMMON_ADAPTATIONS:
+# - add grouping categories with separate colors or markers
+# - add confidence ellipses for groups
+# - add marginal distributions (histograms/KDE) on the sides
+# - add minor statistical metrics to textbox
+#
+# DO_NOT_CHANGE:
+# - do not convert the diagnostic plot to bar or line chart
+# - do not reverse axes (keep observed on x, predicted on y)
+# - do not remove 1:1 line or metrics textbox
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

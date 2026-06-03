@@ -1,15 +1,26 @@
 # TEMPLATE_ID: scenario_uncertainty_timeseries
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: timeseries_with_uncertainty
-# LOCKED_STRUCTURE:
-# - central trend line
-# - translucent filled error/uncertainty envelope
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: scenario_uncertainty_timeseries_plot
+#
+# CORE_VISUAL_GRAMMAR:
+# - continuous trend line representing mean/median over time
+# - semi-transparent shaded envelope representing uncertainty (standard deviation, min-max, or IQR)
+#
+# COMMON_ADAPTATIONS:
+# - add multiple trend lines with corresponding shaded envelopes
+# - add vertical event bands or horizontal thresholds
+# - customize alpha transparency of shaded region
+#
+# DO_NOT_CHANGE:
+# - do not remove the shaded uncertainty ribbon
+# - do not convert to bar charts
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

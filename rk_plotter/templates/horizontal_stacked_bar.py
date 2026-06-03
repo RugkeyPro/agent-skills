@@ -1,17 +1,26 @@
 # TEMPLATE_ID: horizontal_stacked_bar
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: horizontal_stacked_percent_bar
-# LOCKED_STRUCTURE:
-# - horizontal bars representing groups
-# - x-axis scaled explicitly from 0 to 100%
-# - component values stacked to sum to 100%
-# - legend positioned on top
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: horizontal_stacked_bar_chart
+#
+# CORE_VISUAL_GRAMMAR:
+# - horizontal 100% stacked bar chart (great for long categorical labels)
+# - component segments sum up to 100%
+#
+# COMMON_ADAPTATIONS:
+# - add extra categorical groups or component columns
+# - sort bars in ascending/descending order of a specific component
+# - add vertical threshold/reference lines
+#
+# DO_NOT_CHANGE:
+# - do not convert to vertical bars unless requested
+# - do not remove category labels on the y-axis
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

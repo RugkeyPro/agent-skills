@@ -1,16 +1,25 @@
 # TEMPLATE_ID: event_period_timeseries
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: event_intervention_timeseries
-# LOCKED_STRUCTURE:
-# - wide time-series axis
-# - line plot trend trajectory
-# - vertical highlighted block representing event window (axvspan)
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: event_period_timeseries_plot
+#
+# CORE_VISUAL_GRAMMAR:
+# - continuous line plot displaying time series data
+# - vertical highlighted shaded window (axvspan) marking a specific event period
+#
+# COMMON_ADAPTATIONS:
+# - add multiple event windows with different colors
+# - add multiple line series for comparison
+# - add annotations pointing to specific event dates
+#
+# DO_NOT_CHANGE:
+# - do not remove the vertical event highlight window
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

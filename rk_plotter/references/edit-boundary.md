@@ -1,33 +1,142 @@
-# Edit Boundary: Modification Constraints
+# Edit Boundary: Agent Freedom and Modification Boundaries
 
-This document defines what code modifications are permitted and what structures must remain locked when creating, refactoring, or optimizing scientific plots.
-
----
-
-## Allowed Modifications & Controlled Extensions
-The LLM is encouraged to modify parameters and add necessary structural components to adapt templates to the user's scientific query, as long as they stay within the template's style system.
-
-### 1. Style & Config Parameters (`STYLE_CONFIG`, `TEXT_CONFIG`)
-- **Data Path & Columns**: Customize `load_data()` path and `FIELD_MAP` variables.
-- **Axes Text & Labels**: Titles, coordinate labels, legend texts, and units.
-- **Style Customizations**: Figure size (`figsize`), font sizes, marker sizes, line widths, and specific color palette overrides mapping to semantic values.
-- **Export Formats**: Basename, formats, and export DPIs.
-
-### 2. Controlled Structure Extensions (受控结构扩展)
-**"不改变图形基本形式，不等于不能添加元素。"** If the scientific data demands it, the LLM is explicitly allowed to add the following elements on top of the template motherboard:
-- **Secondary Y/X Axes (同类轴)**: Add a secondary axis using `ax.twinx()` or `ax.twiny()` to overlay a second related variable of the same chart type (e.g. secondary line or scatter series).
-- **Extra Series (系列)**: Add more lines, bars, or scatter series to display additional comparison groups.
-- **Error Indicators (误差线/带)**: Add error bars (`ax.errorbar()`) or semi-transparent uncertainty shading/envelopes (using `ax.fill_between()`).
-- **Reference lines (参考线)**: Add horizontal/vertical threshold or mean lines using `ax.axhline()`, `ax.axvline()`, or a diagonal 1:1 guideline.
-- **Inset Subplots (局部放大图)**: Add local inset subplots using `ax.inset_axes()` to detail or zoom in on high-density regions.
+本文件定义 agent 在复制模板代码后，可以修改、扩展和禁止修改的范围。
 
 ---
 
-## Forbidden Modifications
-Unless the user explicitly requests otherwise, the LLM **must not** modify the following core structural features:
+## 1. Always Allowed
 
-1. **Fundamental Graph Type Conversion**: Do not turn a scatter plot into a line plot, a violin plot into a bar chart, or a stacked bar into a grouped bar.
-2. **Axis Meanings**: Do not swap variables across axes (e.g., swapping x and y in a prediction diagnostic plot) or change their physical meaning.
-3. **Overall Layout Frame**: Do not change the overall multi-panel grid layout. A dual-panel template must remain a dual-panel layout, though each panel can be expanded with the allowed elements above.
-4. **Statistical Methods**: Do not change how regressions, metrics, or distributions are calculated (e.g. do not change a linear regression fit to a polynomial fit unless asked).
-5. **Single-Format Export**: Do not omit `svg` or `pdf` outputs. Publication-quality requires vector exports.
+以下内容可以直接修改：
+
+- 数据路径；
+- 文件读取逻辑；
+- `FIELD_MAP`；
+- 标题；
+- 坐标轴标签；
+- 单位；
+- legend 文本；
+- colorbar 文本；
+- 字体族；
+- 字号；
+- `figsize`；
+- 输出文件名；
+- 输出格式；
+- PNG dpi；
+- 颜色 hex；
+- 线宽；
+- 点大小；
+- 透明度；
+- tick 间距；
+- 图例列数；
+- 图例位置的轻微调整。
+
+---
+
+## 2. Allowed When Data Requires
+
+当真实数据结构、统计结果或科学表达需要时，允许在模板风格体系内增加以下元素：
+
+### 2.1 同类数据系列
+
+例如：
+- 多增加几条情景线；
+- 增加更多柱状分组；
+- 增加更多散点组；
+- 增加更多堆叠组分。
+
+要求：
+- 使用模板原有配色逻辑扩展颜色；
+- 不改变图形基本类型；
+- legend 保持模板风格。
+
+### 2.2 额外坐标轴
+
+例如：
+- 双轴图根据第三个指标增加 third axis；
+- 右侧坐标轴适当外移；
+- 额外轴颜色与对应数据系列一致。
+
+要求：
+- 必须属于同一图形语法；
+- 不得让轴标签和刻度互相遮挡；
+- 不得改变原主轴含义。
+
+### 2.3 误差线和不确定性带
+
+例如：
+- `ax.errorbar()`
+- `ax.fill_between()`
+- bootstrap CI band
+- standard error band
+
+要求：
+- 透明度低；
+- 不遮挡主数据；
+- 颜色继承主系列颜色。
+
+### 2.4 参考线和阈值线
+
+例如：
+- 平均线；
+- 基准线；
+- 政策阈值；
+- 1:1 line；
+- 事件时间线。
+
+要求：
+- 线型、颜色、透明度保持克制；
+- 注释尽量短。
+
+### 2.5 Inset 或局部放大图
+
+当局部区域过密或需要突出高值区时，可以增加 inset。
+
+要求：
+- inset 不能破坏主图布局；
+- inset 边框、字体和线宽应继承模板风格；
+- inset 不应喧宾夺主。
+
+### 2.6 地图附加图层
+
+地图模板可增加：
+- 点位；
+- 区域边界；
+- 样区框；
+- 样线；
+- inset 区域图。
+
+要求：
+- 不改变地图投影和主 colorbar 风格；
+- 正式输出不得静默 fallback 到普通坐标图。
+
+---
+
+## 3. Requires Explicit User Request
+
+以下修改只有在用户明确要求时才可以进行：
+
+- 改变图形基本类型；
+- 将柱状图改成折线图；
+- 将散点图改成箱线图；
+- 改变统计方法；
+- 改变坐标轴变量含义；
+- 删除模板中的核心元素；
+- 改变多面板总体布局；
+- 放弃 SVG/PDF 输出；
+- 使用高饱和、非学术风格配色；
+- 在图内添加长段文字说明。
+
+---
+
+## 4. Visual Similarity Rule
+
+即使允许扩展，也必须尽可能保持模板视觉效果。
+
+判断标准：
+- 一眼看上去仍然像原模板；
+- 主图形类型不变；
+- 字体和字号层级不变；
+- 颜色风格一致；
+- 轴线和网格风格一致；
+- legend / colorbar 仍属于原模板风格；
+- 输出尺寸和格式符合模板规范。

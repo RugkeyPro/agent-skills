@@ -1,16 +1,29 @@
 # TEMPLATE_ID: multi_scenario_timeseries
-# TEMPLATE_VERSION: 1.0
+# TEMPLATE_VERSION: 1.1
 # FIGURE_TYPE: multi_scenario_line_plot
-# LOCKED_STRUCTURE:
-# - wide time-series axis (x represents years/time)
-# - multiple scenario lines with distinct colors
-# - legend positioned neatly on top
+#
+# CORE_VISUAL_GRAMMAR:
+# - calendar time on x-axis
+# - multiple scenario/experimental curves represented by distinct lines
+# - compact legend positioned at the top of the canvas
+#
+# COMMON_ADAPTATIONS:
+# - add more scenario lines if user data contains more scenarios
+# - add uncertainty ribbons if lower/upper or standard deviation columns exist
+# - add event windows (shaded vertical bands with axvspan)
+# - add horizontal threshold reference lines
+# - add minor inset zoom plots
+#
+# DO_NOT_CHANGE:
+# - do not convert trends to bar charts or radar charts
+# - do not reverse chronological order
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

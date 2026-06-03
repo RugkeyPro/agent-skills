@@ -1,15 +1,25 @@
 # TEMPLATE_ID: boxen_plot
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: group_distribution_boxen
-# LOCKED_STRUCTURE:
-# - Seaborn boxenplot representing group distributions
-# - quantile color bands
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: boxen_distribution_plot
+#
+# CORE_VISUAL_GRAMMAR:
+# - group categories on x-axis, continuous values on y-axis
+# - letter-value boxen representation showing distributions
+#
+# COMMON_ADAPTATIONS:
+# - overlay individual scatter/jitter points to show sample sizes
+# - add statistical significance brackets/markers between groups (e.g. *, **)
+# - add horizontal mean or baseline guidelines
+#
+# DO_NOT_CHANGE:
+# - do not convert to boxplots or violin plots without permission
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

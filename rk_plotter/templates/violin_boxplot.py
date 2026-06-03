@@ -1,15 +1,25 @@
 # TEMPLATE_ID: violin_boxplot
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: group_distribution_violin_box
-# LOCKED_STRUCTURE:
-# - probability density violin plot
-# - internal boxplot overlay indicating median and interquartile range (IQR)
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: violin_boxplot_distribution_plot
+#
+# CORE_VISUAL_GRAMMAR:
+# - violin density outlines representing distributions per group
+# - overlay of a standard narrow box-and-whisker plot inside each violin
+#
+# COMMON_ADAPTATIONS:
+# - add significance asterisks above violins
+# - overlay raw jittered scatter points for small sample sizes
+# - adjust violin bandwidth or boxplot width
+#
+# DO_NOT_CHANGE:
+# - do not remove the internal boxplot overlay
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

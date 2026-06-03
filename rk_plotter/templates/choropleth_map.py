@@ -1,17 +1,27 @@
 # TEMPLATE_ID: choropleth_map
-# TEMPLATE_VERSION: 1.0
+# TEMPLATE_VERSION: 1.1
 # FIGURE_TYPE: geographical_country_choropleth_map
-# LOCKED_STRUCTURE:
-# - Cartopy map projection (Robinson)
-# - country geometry boundaries colored by metric value
-# - ocean backdrop features
-# - horizontal colorbar on bottom
+#
+# CORE_VISUAL_GRAMMAR:
+# - Robinson projection global country boundaries colored by values
+# - bottom horizontal colorbar
+# - ocean feature backdrop and missing value gray colors
+#
+# COMMON_ADAPTATIONS:
+# - add coordinate bubbles/scatter points overlay
+# - highlight specific country borders (e.g. red outlines)
+# - filter map boundaries to specific continents/regions
+#
+# DO_NOT_CHANGE:
+# - do not degrade or fallback to non-projection plots
+# - do not remove colorbar or country boundaries
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

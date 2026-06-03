@@ -1,16 +1,27 @@
 # TEMPLATE_ID: dual_panel_scatter_fit
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: multi_panel_regression_scatter
-# LOCKED_STRUCTURE:
-# - dual side-by-side panels (1 row, 2 columns)
-# - panel label indicators (A, B) in top-left
-# - linear regression dashed fit on both panels
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: dual_panel_scatter_fit
+#
+# CORE_VISUAL_GRAMMAR:
+# - left-right double panels sharing the y-axis range
+# - scatter points with linear regression fit lines on both panels
+# - shared legends and clean labels
+#
+# COMMON_ADAPTATIONS:
+# - add confidence bands around fit lines
+# - add statistical metric textboxes to both panels
+# - adjust specific marker shapes/colors per group
+#
+# DO_NOT_CHANGE:
+# - do not change to single panel or vertical subplots
+# - do not remove regression lines
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

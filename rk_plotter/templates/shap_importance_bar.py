@@ -1,15 +1,26 @@
 # TEMPLATE_ID: shap_importance_bar
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: ranked_horizontal_importance_bar
-# LOCKED_STRUCTURE:
-# - horizontal bars sorted in descending order of feature importance
-# - features listed vertically on y-axis
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: shap_feature_importance_barplot
+#
+# CORE_VISUAL_GRAMMAR:
+# - ranked horizontal bar chart sorted in descending order of feature impact
+# - feature names on y-axis, importance metric on x-axis
+#
+# COMMON_ADAPTATIONS:
+# - add error bars for cross-validated importance metrics
+# - color bars differently based on positive/negative average SHAP value
+# - add horizontal/vertical target threshold lines
+#
+# DO_NOT_CHANGE:
+# - do not convert to vertical bars unless requested
+# - do not change the descending rank ordering
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

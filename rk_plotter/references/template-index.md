@@ -1,32 +1,22 @@
 # Template Index: Scientific Plotting Catalog
 
-Use this table to match user requests and datasets to the appropriate scientific plotting template.
+本索引用于帮助 agent 选择最接近的绘图模板。模板选择后，必须复制对应模板代码，再基于真实数据微调。
 
-| Template ID | Chart Category | Primary Use Case | Required Fields | Locked Structures (Do Not Change) |
+| Template ID | Use Case | Required Fields | Core Visual Grammar | Allowed Natural Adaptations |
 |---|---|---|---|---|
-| `predicted_vs_real_scatter` | Regression / ML | Model prediction diagnostics (Measured vs. Predicted). | `observed`, `predicted` | Single square panel, 1:1 diagonal line, linear fit dashed line, performance metrics box. |
-| `density_scatter` | Scatter Plot | Visualizing high-density paired numeric observations. | `x`, `y` | Points colored by local Gaussian KDE density using Seaborn 'mako' colormap, colorbar on right. |
-| `dual_panel_scatter_fit` | Multi-panel | Comparing relationships of two groups or datasets side-by-side. | `x1`, `y1`, `x2`, `y2` | Left-right double panels, shared y-axis limits, linear fit regression curves. |
-| `multi_scenario_timeseries` | Time Series | Projecting multiple model/experimental curves over time. | `x` (Time), `series` (List of scenario columns) | X-axis calendar time, color-differentiated scenario lines, publication-friendly top legend. |
-| `scenario_uncertainty_timeseries` | Time Series | Trends over time with uncertainty/confidence envelopes. | `x` (Time), `y` (Mean), `lower`, `upper` | Center line trend plus transparent alpha band indicating standard deviation or IQR. |
-| `event_period_timeseries` | Time Series | Analyzing trajectories before, during, and after an event. | `x`, `y` | Line series plus vertical highlighted shaded window (`axvspan`) representing target event. |
-| `stacked_percent_bar` | Composition | Component shares or relative abundance across groups (sum=100%).| `group`, `components` (columns) | Vertical 100% stacked bar chart, clean top legend. |
-| `horizontal_stacked_bar` | Composition | Part-of-whole composition with long categorical group labels. | `group`, `components` (columns) | Horizontal 100% stacked bar chart, clean top legend. |
-| `boxen_plot` | Distribution | Analyzing detailed distribution shapes across groups. | `group`, `value` | Letter-value boxen plot using Seaborn, quantile-based color bands. |
-| `violin_boxplot` | Distribution | Showing probability density and IQR statistics simultaneously. | `group`, `value` | Violin plot with internal box-and-whisker overlay. |
-| `heatmap_2d` | Correlation / Grid | Displaying matrices, correlation coefficients, or grid values. | `x` (Categories), `y` (Categories), `value` | 2D color-coded grid with annotated cells and right-hand colorbar. |
-| `raster_map` | Spatial Map | Gridded spatial fields (e.g., global anomalies or exposures). | `lon`, `lat`, `raster` (2D array) | Geographic projection (Cartopy PlateCarree/Robinson), spatial grid overlay, colorbar. |
-| `global_regional_sst_map` | Spatial Map | Global or regional sea surface temperature changes. | `lon`, `lat`, `delta_sst` | PlateCarree map projection (central_longitude=180), bottom horizontal colorbar, land/coastline backdrop. |
-| `choropleth_map` | Spatial Map | Country-level or administrative regional indicators. | `region` (ISO codes), `value` | Robinson projection global country outlines colored by quantitative values. |
-| `shap_importance_bar` | ML Explainability | Ranking feature importances or summary metrics. | `feature`, `importance` | Ranked horizontal bar chart sorted in descending order of feature impact. |
-| `multipanel_layout` | Layout Frame | Combining different chart types into a single figure. | Custom per panel | GridSpec multi-panel layout canvas (e.g. 2x2 grids) with explicit panel markers (A, B, C, D). |
-
----
-
-## Data Structure Compatibility Guide
-
-- **Time Series**: If the dataset contains a column like `Year`, `Date`, or `Month` and multiple scenario columns, use `multi_scenario_timeseries` or `scenario_uncertainty_timeseries`.
-- **Spatial Grids**: If data contains coordinates like `longitude/latitude` or `x/y` grids with a 2D matrix of values, use `raster_map`.
-- **Compositions**: If data represents percentage splits (relative abundance, mass fractions, cost shares) that add up to 100% for each category, use `stacked_percent_bar` or `horizontal_stacked_bar`.
-- **Distributions**: If data contains a categorical grouping column and continuous measurement values (e.g. experimental treatments vs. values), use `boxen_plot` or `violin_boxplot`.
-- **Predictions**: If data contains target observations (observed) and corresponding model outputs (predicted), use `predicted_vs_real_scatter`.
+| `predicted_vs_real_scatter` | 模型预测诊断 | `observed`, `predicted` | 单面板方形散点图 + 1:1 线 + 回归线 + 指标框 | 增加分组颜色、置信椭圆、边际分布、小型 inset，但保持预测-实测诊断语法 |
+| `density_scatter` | 高密度 x/y 点 | `x`, `y` | KDE 密度着色散点 + colorbar | 增加阈值线、分组边界、inset、采样点高亮 |
+| `dual_panel_scatter_fit` | 两组关系对比 | `x1`, `y1`, `x2`, `y2` | 左右双面板 + 共享范围 + 拟合线 | 增加置信带、分组点色、统计指标框，但保持双面板结构 |
+| `multi_scenario_timeseries` | 多情景时间序列 | `x`, `series` | 多线趋势 + 顶部图例 | 增加情景线、误差带、事件阴影、参考线、局部 inset |
+| `scenario_uncertainty_timeseries` | 时间序列不确定性 | `x`, `y`, `lower`, `upper` | 中心线 + 透明置信带 | 增加多组 uncertainty band、事件窗口、阈值线 |
+| `event_period_timeseries` | 事件期时间序列 | `x`, `y` | 折线 + `axvspan` 事件阴影 | 增加多事件窗口、多线组、误差带 |
+| `stacked_percent_bar` | 组成比例 | `group`, `components` | 100% 堆叠柱状图 + 顶部图例 | 增加组分、增加右轴辅助线、增加误差标记 |
+| `horizontal_stacked_bar` | 横向组成比例 | `group`, `components` | 水平 100% 堆叠条形图 | 增加组分、排序、分面、参考线 |
+| `boxen_plot` | 分组分布 | `group`, `value` | Seaborn boxen plot | 增加散点叠加、显著性符号、参考线 |
+| `violin_boxplot` | 分布密度 + IQR | `group`, `value` | violin + box overlay | 增加散点、显著性符号、分组颜色 |
+| `heatmap_2d` | 矩阵/相关性/响应面 | `x`, `y`, `value` | 二维色块 + colorbar | 增加单元格标注、显著性星号、等值线 |
+| `raster_map` | 经纬度栅格 | `lon`, `lat`, `value` | 地图投影 + 栅格 + colorbar | 增加点层、边界框、inset；正式图不静默 fallback |
+| `global_regional_sst_map` | 全球/区域 SST 变化 | `lon`, `lat`, `delta_sst` | PlateCarree 投影 + contourf + 海陆背景 + 底部 colorbar | 增加样区框、点层、区域 inset、等值线标签 |
+| `choropleth_map` | 国家/行政区指标 | `region`, `value` | 分级着色地图 | 增加气泡点、边界、标签，但保持 choropleth 语法 |
+| `shap_importance_bar` | 特征重要性 | `feature`, `importance` | 排序水平条形图 | 增加误差线、分组颜色、阈值线 |
+| `multipanel_layout` | 多面板组合图 | custom | GridSpec 多面板 + panel labels | 可替换子图内容，但保持总体 panel 网格和标号风格 |

@@ -1,15 +1,21 @@
 # TEMPLATE_ID: multipanel_layout
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: multipanel_layout_gridspec
-# LOCKED_STRUCTURE:
-# - GridSpec 2x2 grid layout (4 panels)
-# - bold panel labels (A, B, C, D) in top-left of each panel
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: grid_multipanel_layout_frame
+#
+# CORE_VISUAL_GRAMMAR:
+# - GridSpec multi-panel layout frame (e.g., 2x2 grid)
+# - panel labels (A, B, C, D) in the top-left corner of each sub-axis
+#
+# COMMON_ADAPTATIONS:
+# - replace sub-axes contents with any standard motherboard plotting code
+# - change grid columns/rows layout proportions
+# - share specific axes lines across panels
+#
+# DO_NOT_CHANGE:
+# - do not omit panel index labels (A, B, C, D)
+#
 # EDITABLE:
-# - FIELD_MAP
-# - TEXT_CONFIG
-# - STYLE_CONFIG
-# - EXPORT_CONFIG
-# - data loading path
+# - GridSpec parameters, sub-axes plotting logic, configuration dictionaries
 
 from __future__ import annotations
 import matplotlib

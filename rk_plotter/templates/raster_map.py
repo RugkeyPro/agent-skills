@@ -1,17 +1,28 @@
 # TEMPLATE_ID: raster_map
-# TEMPLATE_VERSION: 1.0
+# TEMPLATE_VERSION: 1.1
 # FIGURE_TYPE: geographical_spatial_raster_map
-# LOCKED_STRUCTURE:
-# - Cartopy map projection subplot (Robinson projection by default)
-# - spatial gridline overlays
-# - ocean and land boundary backdrops
-# - colorbar matching map height
+#
+# CORE_VISUAL_GRAMMAR:
+# - Robinson projection map showing global raster fields
+# - ocean feature backdrops and land polygon backgrounds
+# - horizontal colorbar on the bottom
+#
+# COMMON_ADAPTATIONS:
+# - add point location markers (e.g. sample sites) as scatter layers
+# - add region boundary boxes or path lines
+# - add local zoomed inset maps
+# - change geographic projection (e.g. PlateCarree, Mercator)
+#
+# DO_NOT_CHANGE:
+# - do not fallback or degrade to non-geographical 2D plots
+# - do not remove colorbar or geographic coastlines
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

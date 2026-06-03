@@ -1,16 +1,27 @@
 # TEMPLATE_ID: heatmap_2d
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: annotated_2d_heatmap
-# LOCKED_STRUCTURE:
-# - 2D color-coded grid matrix
-# - cell values annotated as text overlays
-# - colorbar on the right side
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: heatmap_matrix_plot
+#
+# CORE_VISUAL_GRAMMAR:
+# - 2D grid matrix colored by cell values
+# - numerical cell values annotated inside each cell
+# - vertical colorbar on the right side
+#
+# COMMON_ADAPTATIONS:
+# - add statistical significance markers (e.g., *, **) next to cell numbers
+# - overlay contour lines to represent response surfaces
+# - change color maps (e.g., diverging vs. sequential)
+#
+# DO_NOT_CHANGE:
+# - do not convert to 3D surface plot
+# - do not remove colorbar or annotations
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

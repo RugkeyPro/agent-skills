@@ -1,18 +1,28 @@
 # TEMPLATE_ID: global_regional_sst_map
-# TEMPLATE_VERSION: 1.0
+# TEMPLATE_VERSION: 1.1
 # FIGURE_TYPE: global_regional_sst_contourf_map
-# LOCKED_STRUCTURE:
-# - Cartopy PlateCarree projection subplot with central_longitude=180
-# - ocean color fill and land polygon feature backdrop (LAND facecolor="#d3d3d3", coastlines color="#000000")
-# - contourf spatial grid fill (RdYlBu_r colormap, levels 0 to 6 with 0.5 steps)
-# - horizontal bottom colorbar (extend='both')
-# - specific gridlines at 40°E, 100°E, 160°E, 140°W, 80°W, 20°W and -60°S to 60°N
+#
+# CORE_VISUAL_GRAMMAR:
+# - PlateCarree projection map with central_longitude=180
+# - coastline features, land polygons, and specific gridlines
+# - horizontal colorbar on bottom
+#
+# COMMON_ADAPTATIONS:
+# - add region outline boxes (axvspan/rectangle)
+# - add scatter markers for observation stations
+# - overlay isotherm contour lines with labels
+# - add zoomed regional inset maps
+#
+# DO_NOT_CHANGE:
+# - do not degrade or fallback to non-geographical plots
+# - do not change central projection meridian
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

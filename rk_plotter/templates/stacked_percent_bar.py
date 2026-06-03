@@ -1,17 +1,26 @@
 # TEMPLATE_ID: stacked_percent_bar
-# TEMPLATE_VERSION: 1.0
-# FIGURE_TYPE: vertical_stacked_percent_bar
-# LOCKED_STRUCTURE:
-# - vertical bars representing groups
-# - y-axis scaled explicitly from 0 to 100%
-# - component values stacked to sum to 100%
-# - legend positioned on top
+# TEMPLATE_VERSION: 1.1
+# FIGURE_TYPE: stacked_percentage_bar_chart
+#
+# CORE_VISUAL_GRAMMAR:
+# - vertical 100% stacked bar chart showing component compositions
+# - clean legend positioned at the top of the canvas
+#
+# COMMON_ADAPTATIONS:
+# - add extra component categories
+# - add secondary axis line charts (twinx) for total values comparison
+# - add error bar markers on top of bars
+#
+# DO_NOT_CHANGE:
+# - do not change to non-stacked or grouped bar charts
+# - do not remove top legend
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

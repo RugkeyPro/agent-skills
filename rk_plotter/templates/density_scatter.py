@@ -1,16 +1,28 @@
 # TEMPLATE_ID: density_scatter
-# TEMPLATE_VERSION: 1.0
+# TEMPLATE_VERSION: 1.1
 # FIGURE_TYPE: density_colored_scatter
-# LOCKED_STRUCTURE:
-# - single scatter panel
-# - color mapping by local Gaussian KDE density
-# - colorbar on right side
+#
+# CORE_VISUAL_GRAMMAR:
+# - scatter plot colored by local Gaussian KDE density
+# - uses Seaborn 'mako' colormap by default
+# - vertical colorbar on the right side
+#
+# COMMON_ADAPTATIONS:
+# - add horizontal/vertical threshold lines
+# - add target guidelines or regression lines
+# - add local inset zoom plot for dense region
+# - change colormap to match specific journal theme
+#
+# DO_NOT_CHANGE:
+# - do not convert to 2D heatmap or contour plot
+# - do not remove colorbar
+#
 # EDITABLE:
 # - FIELD_MAP
 # - TEXT_CONFIG
 # - STYLE_CONFIG
 # - EXPORT_CONFIG
-# - data loading path
+# - data loading and preparation logic
 
 from __future__ import annotations
 import matplotlib

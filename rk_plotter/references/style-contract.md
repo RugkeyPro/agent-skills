@@ -78,7 +78,20 @@ Do not use high-saturation raw primary colors (e.g. pure red `#FF0000` or pure g
 
 ---
 
-## 5. Annotation & Text Constraints (标注与文本限制)
+## 5. Style Inheritance Rule
+
+当 agent 增加额外元素时，新元素必须继承模板风格。
+- **新增第三轴时**：轴线颜色应与对应数据系列一致。
+- **新增误差带时**：颜色应来自主线颜色，并降低透明度（`alpha` 设置在 0.1 到 0.2 之间）。
+- **新增参考线时**：使用灰色、虚线、低线宽（例如 `color="#888888", linestyle="--", linewidth=0.8`）。
+- **新增 inset 时**：其内部的字体和线宽应小于或等于主图，且背景边框一致。
+- **新增图例项时**：应合并进原 legend 风格，不要新建杂乱或重叠的图例框。
+
+不得因为增加新元素而改变模板整体的视觉气质。
+
+---
+
+## 6. Annotation & Text Constraints (标注与文本限制)
 
 Excessive text inside the plot region clutters the visual canvas and detracts from publication aesthetics. Strict constraints are applied to all custom text annotations added inside the plot boundaries (`ax.text` or `ax.annotate`):
 
@@ -95,10 +108,9 @@ Excessive text inside the plot region clutters the visual canvas and detracts fr
 
 ---
 
-## 6. Output Specifications
+## 7. Output Specifications
 
 All plotting scripts must save outputs in three standard formats:
 1. **SVG**: For vector graphics scaling and vector editing (illustrator, Inkscape).
 2. **PDF**: For vector embedding in document editors.
 3. **PNG**: High-resolution raster preview (DPI **600** required).
-
