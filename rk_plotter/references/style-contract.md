@@ -38,6 +38,11 @@ Relative font sizes should be configured as follows:
 
 ## 2. Canvas Dimensions
 
+Current repository rule: default outputs should be single-column figures. Preserve each
+asset script's aspect ratio as much as possible, but scale the width to about `3.5`
+inches unless the user explicitly requests a wider multi-panel or double-column figure.
+Maps may use compact wide single-column sizes such as `(3.5, 1.65)` or `(3.5, 2.0)`.
+
 Scientific figures must fit standard journal page columns. Ensure the `figsize` is specified in **inches**:
 
 | Figure Layout | Target Width | Typical Height | Recommended Figsize |

@@ -3,6 +3,10 @@ name: rk_plotter
 description: 科研绘图模板母版 skill。用于从 0 生成科研绘图脚本、重构旧绘图代码或优化已有绘图脚本；必须首先复制最接近的模板绘图代码，再基于模板代码接入真实数据并微调，尽可能保持模板的视觉效果、构图风格和输出规范。
 ---
 
+IMPORTANT: Before plotting, read `references/high-fidelity-policy.md` and ask the user
+for the required template, color, legend/colorbar, figure size, map projection/extent,
+and statistical-display choices. Templates are high-fidelity masters derived from
+`assets/original-scripts/` and `assets/new-scripts/`, not generic recipes.
 # rk_plotter: 科研绘图模板母版 Skill
 
 本 Skill 通过**复制模板代码 + 接入真实数据 + 保持视觉风格 + 必要微调扩展**的方式，生成可读、可改、可交付的完整科研绘图脚本。

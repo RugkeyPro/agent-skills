@@ -1,5 +1,47 @@
 # Template Index: Scientific Plotting Catalog
 
+See `high-fidelity-policy.md` before using any template. Map templates now expose
+high-fidelity modes:
+
+| Template ID | Mode | Source asset(s) | Use case | Visual contract |
+|---|---|---|---|---|
+| `choropleth_map` | `country_choropleth` | `figure-country-level choropleth map.py` | Global countries/regions or ocean regions colored by binned values | PlateCarree, white ocean, pale land, thin gray borders, internal lower-left patch legend |
+| `choropleth_map` | `choropleth_symbols` | `figure-choropleth + proportional symbol map.py` | Polygon values plus scatter/bubble yield or site data | Blue log choropleth, pink proportional points, size legend, bottom horizontal colorbar |
+| `choropleth_map` | `proportional_continuous` | `proportional symbol map + continuous color map.py` | Regional point locations with size and continuous color | PlateCarree regional extent, black point outlines, size legend, vertical colorbar, optional inset |
+| `choropleth_map` | `proportional_categorical` | `proportional symbol map + categorical color map.py` | National/regional point locations with size and binned category color | Top longitude ticks, category legend, size legend, translucent categorical bubbles |
+| `raster_map` | `log_raster` | `figure-log-scale raster map.py` | Default global raster map for environmental risk/load fields | PlateCarree, log colorbar, blue-cyan-yellow-orange-red-purple palette, white land mask |
+| `raster_map` | `contour_robinson` | `figure-raster map with contour lines.py` | Global raster with discrete bands and contour overlays | Robinson projection, discrete colorbar with edges, black contour lines, gray land |
+| `raster_map` | `quiver_log` | `figure-raster map+quiver map+log colorbar.py` | Ocean parameter fields with flow/current direction | PlateCarree wide single-column, log raster, quiver arrows, vertical log colorbar |
+| `raster_map` | `hotspot` | `figure-hotspot_map.py` | Hotspot or terrestrial/ocean mask maps | White/ocean masking, green-yellow-red hotspot palette, inset-style vertical colorbar |
+
+Composition/bar templates now expose high-fidelity modes:
+
+| Template ID | Mode | Source asset(s) | Use case | Visual contract |
+|---|---|---|---|---|
+| `stacked_percent_bar` | `vertical_percent` | `figure-100%_stacked_bar_chart.py` | Quantile, treatment, or gradient-wise composition percentages | Vertical 100% stacked bars, green-blue-purple-black HFI palette, bottom multi-column legend |
+| `stacked_percent_bar` | `horizontal_percent` | `horizontal 100% stacked bar chart.py` | Country/region rankings with long labels and binned composition | Horizontal 100% stacked bars, labels above bars, top compact legend |
+| `stacked_percent_bar` | `diverging_total` | `figure-diverging stacked bar chart.py` | Positive/negative environmental contributions plus total panel | Main diverging stacked bars plus right Total panel, split blue/orange legends |
+| `stacked_percent_bar` | `stacked_line` | `figure-stacked percentage bar + multi-line chart with secondary y-axis.py` | Composition plus secondary-axis risk/index trajectories | Pastel stacked bars, right-axis lines with markers, split bar/line legends |
+
+Distribution templates now expose high-fidelity modes:
+
+| Template ID | Mode | Source asset(s) | Use case | Visual contract |
+|---|---|---|---|---|
+| `violin_boxplot` | `boxen_letter_value` | `figure-boxen_plot.py` | Threat/status group distributions with robust quantile layers | Hand-drawn letter-value boxes, jitter background, mean diamond, large axis text |
+| `violin_boxplot` | `violin_box` | `figure-grouped violin plot with boxplot overlay.py` | Many environmental/chemical classes with uncertainty distributions | Multicolor violins, internal boxplots, black outlier points, dense rotated labels |
+| `violin_boxplot` | `raincloud` | `Raincloud plot.py` | Regional/group distribution with density, raw points, box and mean | Half violin, jittered points, narrow boxplot, mean dot, panel label |
+| `violin_boxplot` | `faceted_boxplot` | `figure-faceted grouped boxplot.py` | Region-by-country grouped distributions | Compact single-row facets, colored outlines, per-panel y ranges |
+
+New image-derived template families:
+
+| Template ID | Modes | Source image family | Visual contract |
+|---|---|---|---|
+| `enriched_scatter` | `enrichment_bubble`, `marginal_true_pred`, `joint_kde_hist`, `grouped_regression`, `residual_diagnostic`, `shap_dependence` | Bubble enrichment, marginal prediction scatter, joint KDE/hist, grouped regression, SVR residuals, SHAP dependence | Preserve bubble-size legends, marginal density panels, dashed fits, confidence bands, metric annotations, and compact panel labels |
+| `matrix_heatmap` | `triangular_corr`, `pair_corr_density`, `clustered_heatmap`, `expression_significance` | Correlation matrix, pair density/correlation matrix, clustered heatmap, scaled-expression heatmap | Preserve triangular masks, annotated cells, dendrograms, side annotations, significance stars/NS, and diverging colorbars |
+| `time_event_flow` | `ensemble_timeseries`, `event_timeline`, `paired_slope`, `sankey_multistage`, `alluvial_survival`, `ternary_bubble` | Ensemble time series, timeline, paired slope plot, Sankey/alluvial, ternary bubble | Preserve compact timelines, alternating event labels, paired gray lines, pastel ribbons, survival colors, ternary legends |
+| `ordination_embedding` | `pca_biplot_marginal`, `pcoa_ellipse`, `rda_biplot`, `embedding_colorbar` | PCA, PCoA, RDA/CCA, MDS/t-SNE/UMAP | Preserve group ellipses, biplot arrows, marginal densities, PERMANOVA annotations, and embedding colorbars |
+| `inference_distribution` | `significance_box`, `taxonomic_stacked_bar`, `ridgeline_density`, `forest_ridgeline`, `posterior_distribution`, `dumbbell_caterpillar`, `roc_curve` | Boxplot letters, taxonomic composition, ridgelines, forest/ridgeline meta-analysis, posterior distributions, dumbbell/caterpillar, ROC | Preserve significance letters, compact legends, ridgeline offsets, CI bars, side heatmaps, expected/observed points, specificity axis |
+
 本索引用于帮助 agent 选择最接近的绘图模板。模板选择后，必须复制对应模板代码，再基于真实数据微调。
 
 | Template ID | Use Case | Required Fields | Core Visual Grammar | Allowed Natural Adaptations |
