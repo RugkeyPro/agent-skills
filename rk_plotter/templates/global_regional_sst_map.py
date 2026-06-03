@@ -23,13 +23,24 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Cartopy imports must be wrapped or handled gracefully
+import sys
+import subprocess
+
+# Cartopy imports are auto-installed if missing to prevent layout degradation
 try:
     import cartopy.crs as ccrs
     import cartopy.feature as cfeature
-    HAS_CARTOPY = True
 except ImportError:
-    HAS_CARTOPY = False
+    print("Required package 'cartopy' is missing. Attempting automatic installation...", file=sys.stderr)
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "cartopy"], check=True)
+        import cartopy.crs as ccrs
+        import cartopy.feature as cfeature
+    except Exception as e:
+        raise ImportError(
+            "Failed to automatically install 'cartopy'. Please install it manually "
+            "using 'pip install cartopy' to run this template."
+        ) from e
 
 TEMPLATE_ID = "global_regional_sst_map"
 
@@ -137,24 +148,6 @@ def plot(data: dict[str, np.ndarray], text: dict, style: dict) -> plt.Figure:
     """Plots global/regional SST map with central_longitude=180."""
     apply_style(style)
     
-    if not HAS_CARTOPY:
-        # Fallback to standard matplotlib subplots if Cartopy is missing
-        fig, ax = plt.subplots(figsize=style["figsize"], dpi=300)
-        im = ax.contourf(
-            data["lon"], 
-            data["lat"], 
-            data["raster"], 
-            levels=style["levels"], 
-            cmap=style["cmap"], 
-            extend="both"
-        )
-        ax.set_xlabel("Longitude")
-        ax.set_ylabel("Latitude")
-        ax.set_title(text["title"] + " (Cartopy Fallback)", loc="left", fontweight="bold")
-        cbar = fig.colorbar(im, ax=ax, orientation="horizontal", fraction=0.045, pad=0.10, shrink=0.62)
-        cbar.set_label(text["colorbar_label"])
-        return fig
-        
     proj = ccrs.PlateCarree(central_longitude=180)
     fig, ax = plt.subplots(figsize=style["figsize"], subplot_kw={"projection": proj}, dpi=300)
     

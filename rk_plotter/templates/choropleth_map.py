@@ -22,13 +22,26 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
+import sys
+import subprocess
+
+# Cartopy imports are auto-installed if missing to prevent layout degradation
 try:
     import cartopy.crs as ccrs
     import cartopy.feature as cfeature
     import cartopy.io.shapereader as shpreader
-    HAS_CARTOPY = True
 except ImportError:
-    HAS_CARTOPY = False
+    print("Required package 'cartopy' is missing. Attempting automatic installation...", file=sys.stderr)
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "cartopy"], check=True)
+        import cartopy.crs as ccrs
+        import cartopy.feature as cfeature
+        import cartopy.io.shapereader as shpreader
+    except Exception as e:
+        raise ImportError(
+            "Failed to automatically install 'cartopy'. Please install it manually "
+            "using 'pip install cartopy' to run this template."
+        ) from e
 
 TEMPLATE_ID = "choropleth_map"
 
@@ -103,15 +116,6 @@ def plot(data: dict[str, float], text: dict, style: dict) -> plt.Figure:
     """Plots global country-level choropleth map."""
     apply_style(style)
     
-    # Check cartopy presence
-    if not HAS_CARTOPY:
-        # Fallback if Cartopy is not installed
-        fig, ax = plt.subplots(figsize=style["figsize"], dpi=300)
-        ax.text(0.5, 0.5, "Choropleth Map Fallback\n(Cartopy Package Missing)", ha="center", va="center", fontsize=12)
-        ax.set_axis_off()
-        ax.set_title(text["title"] + " (Cartopy Missing)", loc="left", fontweight="bold")
-        return fig
-        
     proj = ccrs.Robinson(central_longitude=0)
     fig, ax = plt.subplots(figsize=style["figsize"], subplot_kw={"projection": proj}, dpi=300)
     
