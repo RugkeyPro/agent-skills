@@ -6,6 +6,19 @@ Both asset folders have equal priority. If a template and a source asset disagre
 preserve the source asset's visual grammar unless the user explicitly chooses another
 option.
 
+## Required selection interface
+
+When the user asks to choose or compare figure types, templates, palettes, color
+schemes, legend/colorbar plans, map settings, figure size, or statistical display
+options, stop before generating plotting code. List the complete available options with:
+
+```bash
+python scripts/list_options.py --format markdown
+```
+
+Then ask the user to choose. Do not begin plotting until the user has selected, unless
+the user explicitly delegates the choice back to the agent.
+
 ## Required pre-plot questions
 
 Before generating a figure, ask the user to choose from concrete candidates based on the
@@ -31,6 +44,14 @@ nearest template. Do not silently decide these visual details:
 The user may combine compatible choices, for example using the default log-raster map
 projection with the hotspot color palette and a horizontal colorbar. Reject combinations
 only when they would break the source template's scientific meaning or visual grammar.
+
+## Template source isolation
+
+Template choice must be made from this skill package only: first read
+`references/template-index.md`, then copy from `templates/TEMPLATE_ID.py`. Do not treat
+plotting scripts in the user's current working directory, adjacent project folders,
+notebooks, generated outputs, or downloaded examples as templates. Those files may be
+used only to recover user data processing and scientific intent.
 
 ## Fixed output contract
 

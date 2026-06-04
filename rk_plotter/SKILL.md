@@ -3,10 +3,22 @@ name: rk_plotter
 description: 科研绘图模板母版 skill。用于从 0 生成科研绘图脚本、重构旧绘图代码或优化已有绘图脚本；必须首先复制最接近的模板绘图代码，再基于模板代码接入真实数据并微调，尽可能保持模板的视觉效果、构图风格和输出规范。
 ---
 
-IMPORTANT: Before plotting, read `references/high-fidelity-policy.md` and ask the user
-for the required template, color, legend/colorbar, figure size, map projection/extent,
-and statistical-display choices. Templates are high-fidelity masters derived from
-`assets/original-scripts/` and `assets/new-scripts/`, not generic recipes.
+IMPORTANT: Before plotting, read `references/high-fidelity-policy.md` and
+`references/selection-interface.md`. If the user asks to choose the figure type,
+template, color scheme, palette, legend/colorbar, figure size, map projection/extent,
+or statistical-display scheme, stop before writing plotting code and ask the user to
+choose from the complete available option list. Use
+`python scripts/list_options.py --format markdown` to enumerate the options.
+
+CRITICAL TEMPLATE SOURCE RULE: template code may only be copied from this skill's own
+`templates/` directory after reading this skill's own `references/template-index.md`.
+Never use plotting scripts found in the user's current working directory, project
+folder, `outputs/`, notebooks, or arbitrary local folders as visual templates. Existing
+user scripts may be read only for data loading, analysis logic, field names, and
+scientific intent; their plotting blocks must not become the template source.
+
+Templates are high-fidelity masters derived from `assets/original-scripts/` and
+`assets/new-scripts/`, not generic recipes.
 # rk_plotter: 科研绘图模板母版 Skill
 
 本 Skill 通过**复制模板代码 + 接入真实数据 + 保持视觉风格 + 必要微调扩展**的方式，生成可读、可改、可交付的完整科研绘图脚本。
@@ -17,14 +29,16 @@ and statistical-display choices. Templates are high-fidelity masters derived fro
 
 ### 1. 必须首先复制模板代码
 
-任何绘图任务都必须先选择最接近的模板，并复制 `templates/` 目录下对应 `.py` 文件中的绘图代码作为母版。
+任何绘图任务都必须先选择最接近的模板，并复制本 skill 根目录下 `templates/` 目录中对应 `.py` 文件的绘图代码作为母版。
+
+如果当前工作目录或用户项目中存在其他绘图脚本，它们只能作为数据读取、统计流程或字段含义的参考，不能作为绘图母版，也不能替代本 skill 的 `templates/*.py`。
 
 禁止直接从零自由重写一套新绘图代码，除非没有任何模板接近用户需求。
 
 正确流程：
 
 ```text
-选择模板 → 复制模板代码 → 接入真实数据 → 微调字段/文字/尺寸/输出 → 必要时扩展元素
+读取本 skill 的模板索引 → 选择模板 → 复制本 skill 的模板代码 → 接入真实数据 → 微调字段/文字/尺寸/输出 → 必要时扩展元素
 ```
 
 ### 2. 尽可能保持模板视觉效果
@@ -98,8 +112,8 @@ df.iloc[:, 1]
 步骤：
 
 1. 检查数据字段和科学问题。
-2. 从 `references/template-index.md` 选择最接近模板。
-3. 复制 `templates/TEMPLATE_ID.py`。
+2. 从本 skill 的 `references/template-index.md` 选择最接近模板。
+3. 复制本 skill 的 `templates/TEMPLATE_ID.py`。
 4. 修改 `FIELD_MAP`、`TEXT_CONFIG`、`STYLE_CONFIG`、`EXPORT_CONFIG`。
 5. 替换模板中的 demo 数据读取逻辑，接入用户真实数据。
 6. 如数据复杂度超过模板默认结构，在同视觉语法下做必要扩展。
@@ -114,8 +128,8 @@ df.iloc[:, 1]
 1. 分离旧代码中的数据逻辑和绘图逻辑。
 2. 保留数据读取、清洗、统计、模型预测、指标计算部分。
 3. 删除旧绘图主体。
-4. 选择最接近模板。
-5. 复制模板绘图代码作为新绘图主体。
+4. 从本 skill 的 `references/template-index.md` 选择最接近模板。
+5. 复制本 skill 的模板绘图代码作为新绘图主体。
 6. 将旧代码最终产生的数据变量接入模板。
 7. 在模板风格下做必要微调和扩展。
 8. 输出完整新脚本。
@@ -129,7 +143,7 @@ df.iloc[:, 1]
 步骤：
 
 1. 判断原图对应的模板类型。
-2. 复制最接近模板的样式层、导出层和布局约束。
+2. 复制本 skill 中最接近模板的样式层、导出层和布局约束。
 3. 尽量保留原图科学含义和主要结构。
 4. 替换或规范：rcParams、字体、字号、颜色、线宽、图例、输出格式。
 5. 如果原图结构过乱，应转入工作流 B，用模板绘图主体重构。
@@ -168,6 +182,7 @@ df.iloc[:, 1]
 ## 参考指南
 
 * 工作流规范: `references/workflow.md`
+* 选择接口: `references/selection-interface.md`
 * 模板索引: `references/template-index.md`
 * 修改边界: `references/edit-boundary.md`
 * 样式规范: `references/style-contract.md`
