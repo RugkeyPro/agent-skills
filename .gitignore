@@ -1,4 +1,4 @@
-**/__pycache__/
+﻿**/__pycache__/
 **/*.py[cod]
 .vscode/
 **/.vscode/
@@ -6,4 +6,16 @@
 outputs/
 **/*.json
 *.json
+
+# Keep template manifests tracked 鈥?they are the single source of truth.
+!**/manifest.json
+!**/templates/manifest.json
+
+# rk_plotter: ignore stray rendered products left in the skill root.
+rk_plotter/*.png
+rk_plotter/*.pdf
+rk_plotter/*.svg
+*.zip
+*.zip
+backup/
 

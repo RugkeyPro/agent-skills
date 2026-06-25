@@ -3,6 +3,7 @@
   "evals": [
     {
       "id": 1,
+      "mode": "generate",
       "prompt": "I'm writing a paper for Nature Communications about microplastic pollution in global river systems. I have data showing that we sampled 42 major rivers across 6 continents and found microplastic concentrations ranging from 0.5 to 125 particles per cubic meter. Higher concentrations were found in rivers near urban centers and textile manufacturing regions. Polyester fibers dominated the composition (65%), followed by polyethylene fragments (22%) and others (13%). We estimate that approximately 2.1 million metric tons of microplastics are transported from rivers to oceans annually. Please help me write a Nature Communications style Abstract (about 200 words) following the five-sentence structure: background → gap → here we → key findings → significance. Also suggest a short, impactful title.",
       "expected_output": "A Nature Communications-style Abstract (~200 words) and a suggested title for a microplastic river study",
       "files": [],
@@ -11,33 +12,105 @@
         "The Abstract follows the 5-sentence structure (background, gap, here we, findings, significance)",
         "The Abstract contains specific quantitative data (concentration ranges, 2.1 Mt estimate)",
         "The Abstract is approximately 180-250 words in length",
-        "The language matches Nature Communications style (formal, precise, metrics-focused)"
+        "The Abstract contains no em dash and no reference citations"
       ]
     },
     {
       "id": 2,
-      "prompt": "I'm preparing a manuscript for Nature Climate Change about how rising sea surface temperatures affect tropical coral reef fish communities. We conducted visual census surveys at 15 reefs in the South China Sea from 2015-2025, covering a period that included two major bleaching events (2016 and 2020). Our data show that herbivorous fish biomass declined by 45% after bleaching events, while omnivorous fish increased by 22%. Coral cover declined from an average of 55% to 22%. The fish community composition shifted from coral-dependent species to generalist species. Please help me write an Introduction for this paper. Use the Nature Climate Change style which emphasizes the causal chain from climate change to ecological impacts. The Introduction should be about 2-3 paragraphs, establishing the importance of coral reefs, the knowledge gap about long-term fish community responses to repeated bleaching, and how our study addresses this gap.",
-      "expected_output": "A 2-3 paragraph Introduction section in Nature Climate Change style, establishing the climate-coral-fish causal chain",
+      "mode": "generate",
+      "prompt": "I'm preparing a manuscript for Nature Climate Change about how rising sea surface temperatures affect tropical coral reef fish communities. We conducted visual census surveys at 15 reefs in the South China Sea from 2015-2025, covering two major bleaching events (2016 and 2020). Herbivorous fish biomass declined by 45% after bleaching events, while omnivorous fish increased by 22%. Coral cover declined from an average of 55% to 22%. The fish community shifted from coral-dependent species to generalist species. Please help me write an Introduction (about 2-3 paragraphs) in Nature Climate Change style emphasizing the causal chain from climate change to ecological impacts, establishing the importance of coral reefs, the knowledge gap about long-term fish community responses to repeated bleaching, and how our study addresses this gap.",
+      "expected_output": "A 2-3 paragraph Introduction in Nature Climate Change style with a clear climate-coral-fish causal chain",
       "files": [],
       "expectations": [
-        "The Introduction establishes the global importance of coral reef ecosystems",
-        "The Introduction clearly identifies a knowledge gap about fish community responses to repeated bleaching",
-        "The Introduction presents the study's approach and objectives in the final paragraph",
-        "The language demonstrates Nature Climate Change's characteristic causal chain logic (climate → coral → fish)",
-        "The Introduction cites relevant literature context (not just data description)"
+        "The Introduction establishes the global importance of coral reef ecosystems with a quantified opener",
+        "The Introduction has an explicit gap sentence (However/Despite/remains poorly understood)",
+        "The final paragraph contains a 'Here, we...' style objective sentence",
+        "The language demonstrates NCC's causal chain logic (climate -> coral -> fish)",
+        "No em dash anywhere in the output"
       ]
     },
     {
       "id": 3,
-      "prompt": "I need help writing a Discussion section about limitations for my Nature Geoscience paper on groundwater depletion in the North China Plain. Our study used GRACE satellite data combined with in-situ well measurements from 2003-2023 to estimate groundwater depletion rates. The key limitations we need to address are: (1) GRACE has coarse spatial resolution (~300 km) which may miss local-scale variability, (2) in-situ well data are unevenly distributed (more wells in the eastern part of the plain), (3) we couldn't separate natural recharge from anthropogenic injection in our mass balance. Despite these limitations, our estimate of 8.2 ± 1.5 km3/year depletion is consistent with independent modeling studies. Please write a limitations paragraph and a broader implications paragraph that follow Nature Geoscience's style — acknowledge limitations honestly but position the work as providing breakthrough observational evidence.",
-      "expected_output": "Two Discussion paragraphs (limitations + broader implications) in Nature Geoscience style for a groundwater depletion study",
+      "mode": "generate",
+      "prompt": "I need help writing a Discussion section about limitations for my Nature Geoscience paper on groundwater depletion in the North China Plain. Our study used GRACE satellite data combined with in-situ well measurements from 2003-2023 to estimate groundwater depletion rates. The key limitations: (1) GRACE has coarse spatial resolution (~300 km) which may miss local-scale variability, (2) in-situ well data are unevenly distributed (more wells in the eastern part of the plain), (3) we couldn't separate natural recharge from anthropogenic injection in our mass balance. Despite these limitations, our estimate of 8.2 plus/minus 1.5 km3/year depletion is consistent with independent modeling studies. Please write a limitations paragraph and a broader implications paragraph in Nature Geoscience style: acknowledge limitations honestly but position the work as breakthrough observational evidence.",
+      "expected_output": "Two Discussion paragraphs (limitations + broader implications) in Nature Geoscience style",
       "files": [],
       "expectations": [
         "The limitations paragraph acknowledges at least 2 of the 3 stated limitations",
-        "The limitations paragraph includes a robustness or defense statement",
+        "The limitations paragraph includes a robustness or defense statement (consistent with independent studies)",
         "The broader implications paragraph connects findings to wider significance",
-        "The language matches Nature Geoscience's style (observation-driven, confident but measured)",
-        "The output is in the form of 2 coherent paragraphs (not bullet points)"
+        "Output is 2 coherent prose paragraphs, not bullet points",
+        "No em dash anywhere in the output"
+      ]
+    },
+    {
+      "id": 4,
+      "mode": "polish",
+      "prompt": "Please polish this Results paragraph into Nature Communications style. It reads too much like Chinese-English and uses weak verbs: 'In our study, we use the model to study the microplastic. The result shows the concentration is very big in the downstream area. We think this is because there are many factories. The method is good and the result proves our idea is right. A lot of plastic is found in the water.' Keep the scientific meaning but make the language match top-journal standards.",
+      "expected_output": "A rewritten Results paragraph with strong verbs, correct tense, quantitative framing, no Chinglish, no em dash",
+      "files": [],
+      "expectations": [
+        "Weak verbs (use/show/think/prove/big) are replaced with stronger academic verbs",
+        "Overcertain wording like 'proves' is softened to suggest/indicate/demonstrate",
+        "Results use past tense for findings",
+        "The rewrite preserves the original scientific meaning (downstream high concentration, factory driver)",
+        "No em dash in the output"
+      ]
+    },
+    {
+      "id": 5,
+      "mode": "translate",
+      "prompt": "我写了一段中文的讨论草稿，想投 Nature Sustainability，请帮我改写成顶刊英文风格（不是逐字直译，要符合学术英文表达和叙事逻辑）：'我们的研究发现，城市扩张是导致湿地退化的最主要原因，占总退化面积的60%以上。和以前的研究比，我们的估计更高，可能是因为我们用了更高分辨率的卫星数据。当然我们的方法也有不足，比如没有考虑地下水的变化。但是总的来说，我们的结果对湿地保护政策有很重要的指导意义，建议政府优先保护城市周边的湿地。'",
+      "expected_output": "An English Discussion paragraph in Nature Sustainability style with comparison-to-prior, honest limitation, and policy implication",
+      "files": [],
+      "expectations": [
+        "Output is fluent academic English, not a literal word-for-word translation",
+        "Includes a comparison-to-previous-work sentence explaining the discrepancy (higher-resolution data)",
+        "Includes an honest limitation (groundwater not accounted for)",
+        "Ends with a policy/management implication in NS style (We advocate / should prioritize)",
+        "Preserves the 60% quantitative finding and no em dash"
+      ]
+    },
+    {
+      "id": 6,
+      "mode": "critique",
+      "prompt": "Can you review this Introduction opening and tell me how to make it better for a Nature-family journal? Here it is: 'The world is facing many environmental problems. Plastic is one of them. Many studies have studied plastic in the ocean. In this paper we study plastic in rivers. We use a model. Our results are interesting and important.' What's wrong with it and how should I fix it?",
+      "expected_output": "A diagnostic critique identifying the missing gap sentence, vague opener, absent quantification, weak objective sentence, and missing topic sentences, with concrete fixes",
+      "files": [],
+      "expectations": [
+        "Identifies the vague non-quantified opener ('The world is facing...') as a problem",
+        "Notes the missing or weak research gap sentence (no However/Despite tension)",
+        "Notes the lack of quantitative anchoring and weak 'interesting and important' ending",
+        "Provides concrete rewritten example sentences, not just abstract advice",
+        "References Nature-style structure (P1 background -> P3 gap -> P5 'Here, we')"
+      ]
+    },
+    {
+      "id": 7,
+      "mode": "generate",
+      "prompt": "Help me write the Methods subsection describing our species distribution model for a Nature Communications paper. Details: we used MaxEnt version 3.4.1, presence-only occurrence records (n=312) of a coastal fish, 7 environmental predictors (SST, salinity, chlorophyll-a, dissolved oxygen, bottom temperature, mixed layer depth, sea surface height) downloaded from Copernicus, spatial resolution resampled to 0.05 degree, 75/25 train-test split, 100 replicate subsample runs, regularization multiplier 1, evaluated with AUC and TSS, VIF used to remove collinear variables (all VIF < 10). Write it in proper Methods style.",
+      "expected_output": "A reproducible Methods subsection in passive voice with full parameters, named noun-phrase subheadings, no results",
+      "files": [],
+      "expectations": [
+        "Uses passive voice for procedures (were obtained / was performed / were resampled)",
+        "Includes all key parameters (version 3.4.1, 0.05 degree, 75/25 split, 100 runs, reg multiplier 1, VIF<10)",
+        "States evaluation metrics (AUC, TSS) without reporting their result values",
+        "Contains no result statements (no 'we found', no significance claims)",
+        "No em dash in the output"
+      ]
+    },
+    {
+      "id": 8,
+      "mode": "generate",
+      "prompt": "I'm writing for Nature (the flagship), so there are no separate Introduction/Results/Discussion headings - it's one continuous 'Main'. Help me draft the opening of the Main (equivalent to intro + first result) for a study quantifying global river-borne nitrogen export to oceans. Key facts: nitrogen drives coastal eutrophication; previous global estimates vary 3-fold; we built a 1-km resolution model combining fertilizer use, sewage, and hydrology; we estimate 43 (37-51) teragrams of nitrogen per year reach the ocean, with 60% from just 10 river basins in South and East Asia. Write it as flowing Nature 'Main' prose, not sectioned.",
+      "expected_output": "A flowing Nature Main opening blending background, gap, objective, and first quantitative result without section headings",
+      "files": [],
+      "expectations": [
+        "Reads as continuous prose without Introduction/Results headings (Nature Main style)",
+        "Contains a quantified opener and a gap statement (estimates vary 3-fold)",
+        "Contains a 'Here we' objective sentence and the 43 Tg/year headline result",
+        "Reports the 60%-from-10-basins spatial concentration finding",
+        "No em dash and uses en dash for the 37-51 range"
       ]
     }
   ]

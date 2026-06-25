@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "description": "rk_plotter 模板单一事实源。list_options.py / render_template_preview.py / check_plot.py 及模板选择均以本文件为准。新增或修改模板时同步更新此文件。",
+  "families": {
+    "scatter_diagnostic": "模型诊断与关系散点",
+    "distribution": "分布（箱线/小提琴/raincloud/letter-value）",
+    "composition": "组成比例（堆叠条形）",
+    "timeseries": "时间序列",
+    "map": "地图（栅格/choropleth/proportional symbol）",
+    "matrix": "矩阵/相关性/热图",
+    "ordination": "排序与降维嵌入",
+    "inference": "统计推断分布族",
+    "importance": "特征重要性",
+    "layout": "多面板组合"
+  },
+  "templates": [
+    {
+      "id": "predicted_vs_real_scatter",
+      "family": "scatter_diagnostic",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["observed", "predicted"],
+      "optional_fields": ["group"],
+      "deps": [],
+      "tags": ["预测诊断", "1:1线", "回归", "parity", "R2 RMSE", "模型评估"],
+      "preview": "assets/previews/predicted_vs_reported_pod_scatter.png"
+    },
+    {
+      "id": "density_scatter",
+      "family": "scatter_diagnostic",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x", "y"],
+      "optional_fields": [],
+      "deps": ["scipy", "seaborn"],
+      "tags": ["高密度散点", "KDE密度着色", "hotspot散点"],
+      "preview": "assets/previews/density_scatter_hotspot_climate.png"
+    },
+    {
+      "id": "dual_panel_scatter_fit",
+      "family": "scatter_diagnostic",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x1", "y1", "x2", "y2"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["双面板", "两组关系对比", "拟合线"],
+      "preview": "assets/previews/model_observation_loglog_scatter.png"
+    },
+    {
+      "id": "enriched_scatter",
+      "family": "scatter_diagnostic",
+      "modes": ["enrichment_bubble", "marginal_true_pred", "joint_kde_hist", "grouped_regression", "residual_diagnostic", "shap_dependence"],
+      "mode_style_key": "scatter_mode",
+      "required_fields": ["x", "y"],
+      "optional_fields": ["group", "size", "color", "label"],
+      "deps": ["scipy"],
+      "tags": ["气泡富集", "边际分布", "joint KDE", "分组回归", "残差诊断", "SHAP dependence"],
+      "preview": "assets/previews/joint_kde_truth_imputed_missing_rate_07.png"
+    },
+    {
+      "id": "boxen_plot",
+      "family": "distribution",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["group", "value"],
+      "optional_fields": [],
+      "deps": ["seaborn"],
+      "tags": ["letter-value", "boxen", "分组分布"],
+      "preview": "assets/previews/amphibian_boxenplot_template.png",
+      "alias_of": "violin_boxplot:boxen_letter_value",
+      "alias_note": "保留作为兼容入口；新任务优先用 violin_boxplot 的 boxen_letter_value 模式。"
+    },
+    {
+      "id": "violin_boxplot",
+      "family": "distribution",
+      "modes": ["boxen_letter_value", "violin_box", "raincloud", "faceted_boxplot"],
+      "mode_style_key": "distribution_mode",
+      "required_fields": ["group", "value"],
+      "optional_fields": ["facet"],
+      "deps": ["scipy"],
+      "tags": ["小提琴", "箱线", "raincloud", "letter-value", "分面箱线", "分布密度"],
+      "preview": "assets/previews/uncertainty_violin_boxplot_by_chemical_class.png"
+    },
+    {
+      "id": "stacked_percent_bar",
+      "family": "composition",
+      "modes": ["vertical_percent", "horizontal_percent", "diverging_total", "stacked_line"],
+      "mode_style_key": "bar_mode",
+      "required_fields": ["group", "components"],
+      "optional_fields": ["line_series"],
+      "deps": [],
+      "tags": ["100%堆叠", "组成比例", "diverging", "双轴折线叠加"],
+      "preview": "assets/previews/stacked_percentage_bar_hfi_levels.png"
+    },
+    {
+      "id": "horizontal_stacked_bar",
+      "family": "composition",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["group", "components"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["横向堆叠", "排序", "长标签组成"],
+      "preview": "assets/previews/rigid_flexible_emissions_stacked_bar.png"
+    },
+    {
+      "id": "multi_scenario_timeseries",
+      "family": "timeseries",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x", "series"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["多情景", "SSP", "RCP", "多线趋势"],
+      "preview": "assets/previews/multi_scenario_concentration_timeseries.png"
+    },
+    {
+      "id": "scenario_uncertainty_timeseries",
+      "family": "timeseries",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x", "y", "lower", "upper"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["不确定性带", "置信区间", "中心线"],
+      "preview": "assets/previews/ssp_biomass_change_timeseries.png"
+    },
+    {
+      "id": "event_period_timeseries",
+      "family": "timeseries",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x", "y"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["事件期", "axvspan阴影", "政策窗口"],
+      "preview": "assets/previews/annual_mhw_days_enso_periods.png"
+    },
+    {
+      "id": "time_event_flow",
+      "family": "timeseries",
+      "modes": ["ensemble_timeseries", "event_timeline", "paired_slope", "sankey_multistage", "alluvial_survival", "ternary_bubble"],
+      "mode_style_key": "mode",
+      "required_fields": ["x", "y"],
+      "optional_fields": ["group"],
+      "deps": [],
+      "tags": ["集合时间序列", "时间线", "paired slope", "sankey", "alluvial", "ternary"],
+      "preview": null
+    },
+    {
+      "id": "raster_map",
+      "family": "map",
+      "modes": ["log_raster", "contour_robinson", "quiver_log", "hotspot"],
+      "mode_style_key": "map_mode",
+      "required_fields": ["lon", "lat", "value"],
+      "optional_fields": ["u", "v"],
+      "deps": ["cartopy", "scipy"],
+      "tags": ["栅格", "环境场", "风险载荷", "log colorbar", "quiver", "hotspot", "经纬度"],
+      "preview": "assets/previews/global_plastic_ingestion_risk_map.png"
+    },
+    {
+      "id": "choropleth_map",
+      "family": "map",
+      "modes": ["country_choropleth", "choropleth_symbols", "proportional_continuous", "proportional_categorical"],
+      "mode_style_key": "map_mode",
+      "required_fields": ["region", "value"],
+      "optional_fields": ["lon", "lat", "point_size", "point_color", "point_category"],
+      "deps": ["cartopy"],
+      "tags": ["分级着色", "国家行政区", "proportional symbol", "气泡地图"],
+      "preview": "assets/previews/global_country_plastic_emissions_choropleth.png"
+    },
+    {
+      "id": "global_regional_sst_map",
+      "family": "map",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["lon", "lat", "value"],
+      "optional_fields": [],
+      "deps": ["cartopy"],
+      "tags": ["SST", "全球区域", "contourf", "海陆背景", "底部colorbar"],
+      "preview": "assets/previews/global_sst_99percentile_minus_mean.png"
+    },
+    {
+      "id": "heatmap_2d",
+      "family": "matrix",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x_group", "y_group", "value"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["二维色块", "相关性", "响应面", "矩阵"],
+      "preview": null
+    },
+    {
+      "id": "matrix_heatmap",
+      "family": "matrix",
+      "modes": ["triangular_corr", "pair_corr_density", "clustered_heatmap", "expression_significance"],
+      "mode_style_key": "heatmap_mode",
+      "required_fields": ["matrix"],
+      "optional_fields": [],
+      "deps": ["scipy"],
+      "tags": ["相关矩阵", "三角掩码", "聚类热图", "树状图", "显著性星号"],
+      "preview": null
+    },
+    {
+      "id": "ordination_embedding",
+      "family": "ordination",
+      "modes": ["pca_biplot_marginal", "pcoa_ellipse", "rda_biplot", "embedding_colorbar"],
+      "mode_style_key": "ordination_mode",
+      "required_fields": ["x", "y"],
+      "optional_fields": ["group", "color"],
+      "deps": [],
+      "tags": ["PCA", "PCoA", "RDA", "CCA", "t-SNE", "UMAP", "降维", "分组椭圆", "biplot"],
+      "preview": "assets/previews/pca_biplot_unoccupied_habitats.png"
+    },
+    {
+      "id": "inference_distribution",
+      "family": "inference",
+      "modes": ["significance_box", "taxonomic_stacked_bar", "ridgeline_density", "forest_ridgeline", "posterior_distribution", "dumbbell_caterpillar", "roc_curve"],
+      "mode_style_key": "mode",
+      "required_fields": ["group", "value"],
+      "optional_fields": [],
+      "deps": ["scipy"],
+      "tags": ["显著性字母", "taxonomic组成", "ridgeline", "forest", "后验分布", "dumbbell", "ROC"],
+      "preview": null
+    },
+    {
+      "id": "shap_importance_bar",
+      "family": "importance",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["feature", "importance"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["特征重要性", "SHAP", "排序水平条形"],
+      "preview": "assets/previews/shap_importance_barplot.png"
+    },
+    {
+      "id": "multipanel_layout",
+      "family": "layout",
+      "modes": ["default"],
+      "mode_style_key": null,
+      "required_fields": ["x1", "y1", "y2", "y3", "y4"],
+      "optional_fields": [],
+      "deps": [],
+      "tags": ["多面板", "GridSpec", "panel label", "组合图"],
+      "preview": null
+    }
+  ]
+}

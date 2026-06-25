@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from pathlib import Path
 
 
@@ -102,45 +101,23 @@ def skill_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def parse_template_index(index_path: Path) -> list[dict[str, str]]:
-    rows: list[dict[str, str]] = []
-    in_table = False
-    headers: list[str] = []
-
-    for raw_line in index_path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line.startswith("|"):
-            in_table = False
-            headers = []
-            continue
-
-        cells = [cell.strip().replace("`", "") for cell in line.strip("|").split("|")]
-        if not in_table:
-            headers = cells
-            in_table = True
-            continue
-
-        if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
-            continue
-        if len(cells) != len(headers):
-            continue
-
-        row = dict(zip(headers, cells, strict=True))
-        template_id = row.get("Template ID")
-        if not template_id or template_id.lower() == "template id":
-            continue
-        rows.append(row)
-
-    return rows
+def load_manifest() -> dict:
+    manifest_path = skill_root() / "templates" / "manifest.json"
+    if not manifest_path.exists():
+        raise FileNotFoundError(
+            f"templates/manifest.json not found at {manifest_path}. "
+            "It is the single source of truth for templates."
+        )
+    return json.loads(manifest_path.read_text(encoding="utf-8"))
 
 
 def collect_options() -> dict[str, object]:
-    root = skill_root()
-    template_files = sorted(path.stem for path in (root / "templates").glob("*.py"))
-    template_rows = parse_template_index(root / "references" / "template-index.md")
+    manifest = load_manifest()
+    templates = manifest.get("templates", [])
     return {
-        "templates": template_rows,
-        "template_files": template_files,
+        "templates": templates,
+        "families": manifest.get("families", {}),
+        "template_ids": [t["id"] for t in templates],
         "palettes": PALETTES,
         "legend_colorbar_plans": LEGEND_COLORBAR_PLANS,
         "statistical_display_plans": STATISTICAL_DISPLAY_PLANS,
@@ -152,14 +129,30 @@ def as_markdown(options: dict[str, object], sections: set[str]) -> str:
     lines: list[str] = []
 
     if "templates" in sections:
-        lines.append("## Templates and Modes")
-        for row in options["templates"]:
-            assert isinstance(row, dict)
-            template_id = row.get("Template ID", "")
-            mode = row.get("Mode") or row.get("Modes") or "default"
-            use_case = row.get("Use case") or row.get("Use Case") or row.get("Visual contract") or ""
-            contract = row.get("Visual contract") or row.get("Core Visual Grammar") or ""
-            lines.append(f"- `{template_id}` / `{mode}`: {use_case} {contract}".rstrip())
+        families = options["families"]
+        assert isinstance(families, dict)
+        templates = options["templates"]
+        assert isinstance(templates, list)
+        lines.append("## Templates and Modes (grouped by family)")
+        by_family: dict[str, list[dict]] = {}
+        for tpl in templates:
+            by_family.setdefault(tpl["family"], []).append(tpl)
+        for family_id, label in families.items():
+            members = by_family.get(family_id, [])
+            if not members:
+                continue
+            lines.append(f"\n### {family_id} — {label}")
+            for tpl in members:
+                modes = tpl.get("modes", ["default"])
+                modes_str = ", ".join(modes)
+                req = ", ".join(tpl.get("required_fields", []))
+                deps = tpl.get("deps", [])
+                deps_str = f" [deps: {', '.join(deps)}]" if deps else ""
+                alias = f" (alias → {tpl['alias_of']})" if tpl.get("alias_of") else ""
+                preview = f" [preview: {tpl['preview']}]" if tpl.get("preview") else ""
+                lines.append(
+                    f"- `{tpl['id']}`{alias} | modes: {modes_str} | required: {req}{deps_str}{preview}"
+                )
         lines.append("")
 
     if "palettes" in sections:
@@ -191,7 +184,7 @@ def as_markdown(options: dict[str, object], sections: set[str]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="List rk_plotter template and style choices.")
+    parser = argparse.ArgumentParser(description="List rk_plotter template and style choices (manifest-driven).")
     parser.add_argument(
         "--section",
         action="append",
@@ -205,7 +198,17 @@ def main(argv: list[str] | None = None) -> int:
     options = collect_options()
 
     if args.format == "json":
-        filtered = {key: value for key, value in options.items() if key in sections or key == "template_files"}
+        key_map = {
+            "templates": ["templates", "families", "template_ids"],
+            "palettes": ["palettes"],
+            "legend": ["legend_colorbar_plans"],
+            "statistics": ["statistical_display_plans"],
+            "maps": ["map_plans"],
+        }
+        wanted: set[str] = set()
+        for section in sections:
+            wanted.update(key_map[section])
+        filtered = {key: value for key, value in options.items() if key in wanted}
         print(json.dumps(filtered, indent=2, ensure_ascii=False))
     else:
         print(as_markdown(options, sections), end="")

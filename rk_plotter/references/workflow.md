@@ -1,114 +1,61 @@
-# Workflow: Scientific Plotting Procedures
+# Workflow: 三类绘图工作流
 
-## 总原则
+总原则：**复制本 skill 的模板代码 → 接入真实数据 → 保持视觉风格 → 最小必要扩展**。
+不得只"参考"模板效果后另写一套绘图代码，也不得把用户工作目录/项目/notebook 里的其他绘图脚本当作视觉母版——那些旧脚本只能提供数据逻辑、统计逻辑、字段名和科学意图。
 
-所有工作流均遵循：
+模板的事实源是 `templates/manifest.json`（id / family / modes / required_fields / deps / preview）。
+选择模板时先读 manifest（或运行 `python scripts/list_options.py --section templates`），再复制 `templates/TEMPLATE_ID.py`。
 
-```text
-读取本 skill 的模板索引，复制本 skill 的模板代码优先，微调扩展其次。
+## 决策默认值：默认自动决策，显式才打断
+
+为了不让每次绘图都变成问答，采用一条明确规则（这条规则优先于任何"出图前必须逐项征询"的旧表述）：
+
+- **默认**：根据数据结构与最近的模板，**自动选定**图型/模式/配色/图例/尺寸/投影等并直接出图。把关键决策写进脚本头注释（`TEMPLATE_ID` / `MODE` / `PALETTE` 等），方便用户回看与修改。
+- **仅当**用户表达了显式选择意图（"我想选 / 对比一下 / 列出选项 / 换个配色 / 用哪个模板"），才停下来调用 `python scripts/list_options.py --format markdown` 列出候选，等用户选定后再绘图。
+- 模板很多时，先列出全部模板 ID/模式，再结合用户数据推荐最接近的 2–3 个。
+
+## Workflow A：从零绘图
+
+用户有数据/字段但没有旧绘图代码。
+
+1. 明确要表达的科学问题。
+2. 检查数据结构：时间列、分组列、数值列、经纬度列、不确定性列、多指标列。
+3. 据此从 manifest 选最接近模板（匹配 `required_fields` 与 `tags`）。
+4. 复制 `templates/TEMPLATE_ID.py` 的完整代码作为输出脚本基础。
+5. 替换数据读取：用户给真实数据则不得在正式输出里保留 demo 数据；仅要预览时可保留。
+6. 修改 `FIELD_MAP` / `TEXT_CONFIG` / `STYLE_CONFIG` / `EXPORT_CONFIG`（含 mode 字段）。
+7. 按需做同语法扩展（见 `template-guide.md` 的"可扩展边界"）。
+8. 输出完整脚本，并用 `python scripts/check_plot.py 脚本.py` 自检。
+
+## Workflow B：重构旧绘图代码
+
+用户给出已有绘图脚本。核心约束：不得只在旧绘图代码上局部美化，必须用匹配模板替换旧绘图主体。
+
+1. 把旧脚本分为 Data block / Analysis block / Plot block / Export block。
+2. **保留** Data block（读取、清洗、单位换算、宽长表转换、合并）与 Analysis block（模型预测、回归、检验、分组统计、CI、自定义指标）。
+3. **删除** Plot block 与 Export block。
+4. 从 manifest 选最接近模板，复制其绘图主体。
+5. 把旧脚本最终产生的数据对象（DataFrame / Series / ndarray / 统计表 / 预测结果）接入模板的 `prepare_data`。
+6. 旧图比模板复杂时，判断是否属于同视觉语法扩展（双轴→三轴、单线→多线、单图层地图→多图层、折线加误差带）。
+7. 统一输出 SVG/PDF/PNG，输出完整新脚本。
+
+推荐在脚本头注明来源：
+
+```python
+# SOURCE_MODE: refactor_existing_script
+# TEMPLATE_BASE: copied_from_templates/<template_id>.py
+# OLD_CODE_KEPT: data loading, cleaning, statistics
+# OLD_CODE_REPLACED: plotting and exporting
 ```
 
-不得只“参考”模板视觉效果后另写一套全新绘图代码。Agent 必须先复制本 skill `templates/` 中最接近的模板 `.py` 文件的主体代码，再在该代码基础上接入真实数据、调整配置和添加必要元素。
+允许保留有明确含义的旧变量名（`model_df` / `summary_df` / `ci_df` / `pred_df`），并可新增辅助函数（`compute_statistics` / `prepare_uncertainty` / `reshape_long_to_wide` 等），但最终绘图仍以复制来的模板 `plot()` 为基础。
 
-严禁把当前工作目录、用户项目目录、临时输出目录或 notebook 附近的其他绘图脚本当作视觉模板。旧脚本只能提供数据逻辑、统计逻辑、字段名和科学意图；绘图主体必须来自本 skill 的模板库。
+## Workflow C：优化已有图
 
-当用户要求“我想选图片类型/配色/模板/方案”等交互选择时，先调用：
+原图结构合理，只是样式/导出不规范。
 
-```bash
-python scripts/list_options.py --format markdown
-```
-
-列出全部可用模板、模式、配色系和展示方案，等待用户选择后再开始绘图。
-
----
-
-## Workflow A: Drawing From Scratch
-
-适用于用户有数据或字段，但没有旧绘图代码。
-
-### Steps
-
-1. 分析用户要表达的科学问题。
-2. 检查数据结构：
-   - 时间列；
-   - 分组列；
-   - 数值列；
-   - 经纬度列；
-   - 不确定性列；
-   - 多指标列。
-3. 从本 skill 的 `references/template-index.md` 选择最接近模板。
-4. 复制本 skill 的 `templates/TEMPLATE_ID.py` 的完整代码作为输出脚本基础。
-5. 替换数据读取逻辑：
-   - 用户提供真实数据时，不保留 demo 数据作为正式输入；
-   - 用户只要求预览时，可以保留 demo 数据。
-6. 修改：
-   - `FIELD_MAP`
-   - `TEXT_CONFIG`
-   - `STYLE_CONFIG`
-   - `EXPORT_CONFIG`
-7. 判断是否需要同语法扩展：
-   - 多一个指标族：可增加额外轴；
-   - 多一个分组：可增加同类系列；
-   - 有 `sd/se/ci`：可增加误差线或误差带；
-   - 有阈值：可增加参考线；
-   - 有局部区域：可增加 inset。
-8. 输出完整脚本。
-
----
-
-## Workflow B: Refactoring Existing Code
-
-适用于用户给出已有绘图脚本。
-
-### 核心约束
-
-不得直接在旧绘图代码上局部美化。必须优先用匹配模板替换旧绘图主体。
-
-### Steps
-
-1. 阅读旧脚本。
-2. 将旧脚本分为：
-   - Data block；
-   - Analysis/statistics block；
-   - Plot block；
-   - Export block。
-3. 保留 Data block 和 Analysis/statistics block。
-4. 删除 Plot block 和 Export block。
-5. 从本 skill 的 `references/template-index.md` 选择最接近模板。
-6. 复制本 skill 的模板代码作为新绘图主体。
-7. 将旧脚本最终产生的数据对象接入模板：
-   - DataFrame；
-   - Series；
-   - NumPy array；
-   - 统计结果表；
-   - 模型预测结果。
-8. 若旧脚本图形结构比模板更复杂，应判断是否属于同视觉语法扩展：
-   - 双轴变三轴；
-   - 单线变多线；
-   - 单图层地图变多图层地图；
-   - 普通折线增加 uncertainty band。
-9. 保持模板视觉效果，统一输出 SVG/PDF/PNG。
-10. 输出完整新脚本。
-
----
-
-## Workflow C: Optimizing Existing Plot
-
-适用于原始图形结构合理，但样式或导出不规范。
-
-### Steps
-
-1. 判断原图与哪个模板最接近。
-2. 复制该模板的样式层、导出层和布局约束。
+1. 判断原图最接近哪个模板。
+2. 复制该模板的样式层、导出层、布局约束。
 3. 尽量保留原图的数据表达关系。
-4. 替换或规范：
-   - rcParams；
-   - 字体；
-   - 字号；
-   - 颜色；
-   - 线宽；
-   - grid；
-   - legend；
-   - colorbar；
-   - savefig。
-5. 若原图结构混乱或难以修复，应改用 Workflow B 重构。
+4. 规范 rcParams / 字体 / 字号 / 颜色 / 线宽 / grid / legend / colorbar / savefig。
+5. 若原图结构过乱难以修复，转 Workflow B 用模板主体重建。

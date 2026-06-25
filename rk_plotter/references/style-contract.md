@@ -1,6 +1,29 @@
 # Style Contract: Aesthetic & Layout Specifications
 
-This document defines the core aesthetic specifications that all generated scientific plots must conform to.
+This document defines the core aesthetic + output specifications that all generated
+scientific plots must conform to. It also absorbs the high-fidelity output contract.
+
+## 0. High-fidelity output contract (was high-fidelity-policy.md)
+
+Templates use a single-column canvas by default, usually `(3.5, 2.0)`–`(3.5, 3.3)` inches
+depending on the source aspect ratio; maps may use compact wide sizes like `(3.5, 1.65)`.
+Every template exports png + pdf + svg, with editable Illustrator text:
+
+```python
+mpl.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "DejaVu Sans"],
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+    "ps.fonttype": 42,
+})
+```
+
+Default to Arial even if the source asset used another family. Replace asset demo data with
+clearer synthetic demo data, but keep the source asset's projection, layer order,
+colorbar/legend structure, line weights, alpha values, and map extent unless the user chooses
+otherwise. When dependencies are missing and the script falls back to synthetic data, it must
+print a `WARNING` to stderr — never present a preview fallback as publication output.
 
 ---
 
@@ -118,4 +141,6 @@ Excessive text inside the plot region clutters the visual canvas and detracts fr
 All plotting scripts must save outputs in three standard formats:
 1. **SVG**: For vector graphics scaling and vector editing (illustrator, Inkscape).
 2. **PDF**: For vector embedding in document editors.
-3. **PNG**: High-resolution raster preview (DPI **600** required).
+3. **PNG**: High-resolution raster. Publication output uses **600 dpi** (`EXPORT_CONFIG.dpi = 600`);
+   `STYLE_CONFIG.dpi` is only the on-screen/interactive preview density and may be lower
+   (e.g. 150–300). This is the single source of truth for the dpi convention.

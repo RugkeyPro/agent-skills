@@ -157,14 +157,21 @@ def synthetic_grid(mode: str) -> dict[str, np.ndarray]:
 def load_data(path: str | Path = "data.csv") -> pd.DataFrame:
     p = Path(path)
     if p.exists():
-        return pd.read_csv(p)
+        df = pd.read_csv(p)
+        df.attrs["synthetic"] = False
+        return df
+    print(f"WARNING: '{p}' not found; using synthetic preview data (NOT real data).", file=sys.stderr)
     grid = synthetic_grid(STYLE_CONFIG["map_mode"])
     lon2, lat2 = np.meshgrid(grid["lon"], grid["lat"])
-    return pd.DataFrame({"lon": lon2.ravel(), "lat": lat2.ravel(), "value": grid["value"].ravel()})
+    df = pd.DataFrame({"lon": lon2.ravel(), "lat": lat2.ravel(), "value": grid["value"].ravel()})
+    df.attrs["synthetic"] = True
+    return df
 
 
 def prepare_data(df: pd.DataFrame, field_map: dict, style: dict) -> dict[str, np.ndarray]:
-    if not Path("data.csv").exists():
+    # Use the DataFrame actually loaded (any filename), not a hardcoded data.csv probe,
+    # so real user data is never silently replaced by synthetic preview data.
+    if df.attrs.get("synthetic", False):
         return synthetic_grid(style["map_mode"])
     clean = pd.DataFrame({
         "lon": pd.to_numeric(df[field_map["lon"]], errors="coerce"),

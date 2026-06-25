@@ -33,6 +33,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import sys
 
 TEMPLATE_ID = "predicted_vs_real_scatter"
 
@@ -218,7 +219,10 @@ def save_outputs(fig: plt.Figure, export: dict) -> list[Path]:
     return paths
 
 def main() -> None:
-    df = load_data("data.csv")
+    path = sys.argv[1] if len(sys.argv) > 1 else "data.csv"
+    if not Path(path).exists():
+        print(f"WARNING: '{path}' not found; rendering synthetic preview data (NOT real data).", file=sys.stderr)
+    df = load_data(path)
     data = prepare_data(df, FIELD_MAP)
     fig = plot(data, TEXT_CONFIG, STYLE_CONFIG)
     paths = save_outputs(fig, EXPORT_CONFIG)

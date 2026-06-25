@@ -1,21 +1,19 @@
 ---
 name: rk_plotter
-description: 科研绘图模板母版 skill。用于从 0 生成科研绘图脚本、重构旧绘图代码或优化已有绘图脚本；必须首先复制最接近的模板绘图代码，再基于模板代码接入真实数据并微调，尽可能保持模板的视觉效果、构图风格和输出规范。
+description: 科研绘图模板母版 skill，用于生成、重构或美化期刊级 matplotlib 科研配图——散点诊断图(predicted vs observed / parity)、密度散点、箱线/小提琴/raincloud/boxen、堆叠条形、时间序列与不确定性带、地图(栅格/choropleth/proportional symbol/SST)、热图与相关矩阵、SHAP/PCA/排序降维、多面板组合图等。只要用户提到画图、绘图、重画这张图、把代码改成出版级/投稿级配图、配色、figure、plot、matplotlib、复现某张论文图，即使没点名模板，也应触发本 skill：先从 templates/manifest.json 选最接近的模板并复制其代码，再接入真实数据、保持视觉风格、做最小必要扩展。不处理纯数据分析、表格生成或与绘图无关的代码。
 ---
 
-IMPORTANT: Before plotting, read `references/high-fidelity-policy.md` and
-`references/selection-interface.md`. If the user asks to choose the figure type,
-template, color scheme, palette, legend/colorbar, figure size, map projection/extent,
-or statistical-display scheme, stop before writing plotting code and ask the user to
-choose from the complete available option list. Use
-`python scripts/list_options.py --format markdown` to enumerate the options.
+IMPORTANT: 模板事实源是 `templates/manifest.json`；选择前读它（或 `python scripts/list_options.py
+--section templates`）。绘图前如需了解修改边界与选择交互规则，读 `references/template-guide.md`。
 
-CRITICAL TEMPLATE SOURCE RULE: template code may only be copied from this skill's own
-`templates/` directory after reading this skill's own `references/template-index.md`.
-Never use plotting scripts found in the user's current working directory, project
-folder, `outputs/`, notebooks, or arbitrary local folders as visual templates. Existing
-user scripts may be read only for data loading, analysis logic, field names, and
-scientific intent; their plotting blocks must not become the template source.
+决策默认值（统一规则，取代旧的"出图前逐项征询"）：**默认根据数据与最近模板自动选定图型/
+模式/配色/图例/尺寸/投影并直接出图，把关键决策写进脚本头注释**；仅当用户显式表达选择意图
+（"我想选 / 对比 / 列出选项 / 换配色 / 用哪个模板"）时，才用
+`python scripts/list_options.py --format markdown` 列出候选并等待选择。
+
+CRITICAL TEMPLATE SOURCE RULE: 模板代码只能复制本 skill `templates/` 目录下的文件。绝不把用户当前
+工作目录、项目、`outputs/`、notebook 或任意本地文件夹里的绘图脚本当作视觉母版。用户旧脚本只能用于
+读取数据、分析逻辑、字段名与科学意图，其绘图块不得成为模板来源。
 
 Templates are high-fidelity masters derived from `assets/original-scripts/` and
 `assets/new-scripts/`, not generic recipes.
@@ -179,12 +177,15 @@ df.iloc[:, 1]
 
 ---
 
-## 参考指南
+## 参考指南（已收敛为 3 份 + 1 个事实源）
 
-* 工作流规范: `references/workflow.md`
-* 选择接口: `references/selection-interface.md`
-* 模板索引: `references/template-index.md`
-* 修改边界: `references/edit-boundary.md`
-* 样式规范: `references/style-contract.md`
-* 代码重构规则: `references/refactor-code.md`
-* QA 检查清单: `references/qa-checklist.md`
+* 模板事实源: `templates/manifest.json`（id / family / modes / required_fields / deps / preview）
+* 工作流（A 从零 / B 重构旧代码 / C 优化）+ 统一决策规则: `references/workflow.md`
+* 模板导览 + 修改边界 + 选择交互 + QA 清单: `references/template-guide.md`
+* 样式与输出契约（字体/画布/配色/三格式/dpi）: `references/style-contract.md`
+
+辅助脚本: `scripts/list_options.py`（列选项，读 manifest）、`scripts/inspect_data.py`（看数据 schema）、
+`scripts/check_plot.py`（结构化自检，支持 `--all`）、`scripts/render_template_preview.py`（批量渲染预览，读 manifest）。
+
+> 原 high-fidelity-policy / selection-interface / edit-boundary / refactor-code / qa-checklist / template-index
+> 已合并进上述文件，留有重定向 stub，可安全删除。
